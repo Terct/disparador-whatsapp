@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Lista de Contatos</title>
+</head>
+
+<button id="start-button">Iniciar</button>
+<button id="stop-button">Parar</button>
+
+
+<body>
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".xlsx">
+        <button type="submit">Enviar Arquivo XLSX</button>
+    </form>
+
+    <h1>Lista de Contatos</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Número</th>
+            </tr>
+        </thead>
+        <tbody id="contact-list">
+            <!-- Dados da lista serão preenchidos aqui -->
+        </tbody>
+    </table>
+
+    <script>
+        // Realize a requisição para obter a lista de contatos e preencher a tabela
+        fetch('/search-list')
+            .then(response => response.json())
+            .then(data => {
+                const contactList = document.getElementById('contact-list');
+                data.forEach(contact => {
+                    const row = document.createElement('tr');
+                    const nameCell = document.createElement('td');
+                    const numberCell = document.createElement('td');
+                    nameCell.textContent = contact.Nome;
+                    numberCell.textContent = contact.Numero;
+                    console.log(contact)
+                    row.appendChild(nameCell);
+                    row.appendChild(numberCell);
+                    contactList.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Erro ao buscar a lista de contatos:', error));
+
+
+
+        const uploadForm = document.getElementById('upload-form');
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(uploadForm);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    // Recarregue a página ou forneça algum feedback de sucesso após o upload.
+                    location.reload();
+                } else {
+                    console.error('Erro ao fazer upload do arquivo XLSX.');
+                }
+            } catch (error) {
+                console.error('Erro ao fazer upload do arquivo XLSX:', error);
+            }
+        });
+
+
+        document.getElementById('start-button').addEventListener('click', () => {
+            // Faça uma requisição para a rota "/start" aqui
+            fetch('/start')
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Ação de Iniciar realizada com sucesso.');
+                    } else {
+                        console.error('Erro ao realizar ação de Iniciar.');
+                    }
+                })
+                .catch(error => console.error('Erro ao realizar ação de Iniciar:', error));
+        });
+
+        document.getElementById('stop-button').addEventListener('click', () => {
+            // Faça uma requisição para a rota "/stop" aqui
+            fetch('/stop')
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Ação de Parar realizada com sucesso.');
+                    } else {
+                        console.error('Erro ao realizar ação de Parar.');
+                    }
+                })
+                .catch(error => console.error('Erro ao realizar ação de Parar:', error));
+        });
+        
+
+    </script>
+</body>
+
+</html>
