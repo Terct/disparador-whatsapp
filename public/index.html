@@ -3,13 +3,22 @@
 
 <head>
     <title>Lista de Contatos</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 
-<button id="start-button">Iniciar</button>
-<button id="stop-button">Parar</button>
-
-
 <body>
+    <h1 id="titulo">Gerenciador de Disparos</h1>
+
+    <div id="Conteiner-Control">
+        <h1 id="status"></h1>
+        <button id="restart-button">Iniciar</button>
+        <button id="stop-button">Parar</button>
+        <button id="start-button">Continuar</button>
+
+        <h2>Status do Progresso: </h2>
+        <h2 id="statusProgress"></h2>
+    </div>
+
     <form id="upload-form" enctype="multipart/form-data">
         <input type="file" name="file" accept=".xlsx">
         <button type="submit">Enviar Arquivo XLSX</button>
@@ -99,8 +108,45 @@
                 })
                 .catch(error => console.error('Erro ao realizar ação de Parar:', error));
         });
-        
 
+        document.getElementById('restart-button').addEventListener('click', () => {
+            // Faça uma requisição para a rota "/stop" aqui
+            fetch('/restart')
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Ação de Parar realizada com sucesso.');
+                    } else {
+                        console.error('Erro ao realizar ação de Parar.');
+                    }
+                })
+                .catch(error => console.error('Erro ao realizar ação de Parar:', error));
+        });
+
+
+
+        const statusElementProgress = document.getElementById('statusProgress');
+        const statusElement = document.getElementById('status');
+
+        function getStatus() {
+            fetch('/search-progress') // Substitua '/getStatus' pela rota correta
+                .then(response => response.json())
+                .then(data => {
+                    //console.log(data[0])
+                    statusElementProgress.textContent = `${data[0].progress}`;
+                    statusElement.textContent = `Situação: ${data[0].status}`;
+                    
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar o status do progresso:', error);
+                    statusElementProgress.textContent = 'Status do Progresso: Erro ao buscar o status';
+                    statusElement.textContent = 'Status do Progresso: Erro ao buscar o status';
+                });
+        }
+
+        getStatus(); // Chame a função para buscar o status quando a página for carregada
+
+        // Atualize o status a cada 5 segundos (você pode ajustar o intervalo conforme necessário)
+        setInterval(getStatus, 5000);
     </script>
 </body>
 

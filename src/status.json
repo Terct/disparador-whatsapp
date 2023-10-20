@@ -1,5 +1,7 @@
 [
-    {
-        "status": "stop"
-    }
+  {
+    "status": "stopped",
+    "lastLine": 1,
+    "progress": "10/99"
+  }
 ]

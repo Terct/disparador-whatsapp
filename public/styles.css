@@ -1,0 +1,73 @@
+body {
+    background-color: #282c35;
+    color: #fff;
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    color: #63a69f;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    border: 1px solid #444;
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background-color: #444;
+    color: #fff;
+}
+
+tr:nth-child(even) {
+    background-color: #363b45;
+}
+
+tr:nth-child(odd) {
+    background-color: #2d313a;
+}
+
+button {
+    background-color: #63a69f;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    margin: 5px;
+}
+
+button:hover {
+    background-color: #4d897f;
+}
+
+input[type="file"] {
+    background-color: #444;
+    color: #fff;
+    border: none;
+    padding: 10px;
+}
+
+form {
+    margin: 10px 0;
+}
+
+#titulo{
+    text-align: center;
+    margin-top: 100px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 40px;
+
+}
+
+#Conteiner-Control{
+    background-color: rgb(77, 75, 75);
+    padding: 10px;
+    width: 350px;
+    text-align: center;
+    border-radius: 20px;
+}
