@@ -23,9 +23,32 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+app.get('/TriggerForEvents', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'TriggerForEvents.html'));
+});
+
+
+const TriggerForListUrl = "https://n8n.dagestao.com/webhook/startorstop"
+const TriggerForEventsUrl = "https://n8n.dagestao.com/webhook-test/controllertriggerevents"
+
 
 app.get('/search-list', (req, res) => {
-    const filePath = path.join(__dirname, 'src', 'database', 'list.json');
+    const filePath = path.join(__dirname, 'src', 'database', 'TriggerForList', 'list.json');
+    // Lê o arquivo list.json e envia os dados como resposta
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Erro ao ler o arquivo list.json:', err);
+            res.status(500).json({ error: 'Erro ao buscar a lista de contatos' });
+        } else {
+            const contactList = JSON.parse(data);
+            res.json(contactList);
+        }
+    });
+});
+
+
+app.get('/search-records', (req, res) => {
+    const filePath = path.join(__dirname, 'src', 'database', 'TriggerForEvents', 'records.json');
     // Lê o arquivo list.json e envia os dados como resposta
     fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
@@ -56,7 +79,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
         const jsonData = xlsx.utils.sheet_to_json(sheet);
 
         // Agora, você pode substituir a lista existente (list.json) pelos dados do arquivo XLSX.
-        const listFilePath = path.join(__dirname, 'src', 'database', 'list.json');
+        const listFilePath = path.join(__dirname, 'src', 'database', 'TriggerForList', 'list.json');
         fs.writeFileSync(listFilePath, JSON.stringify(jsonData, null, 2));
 
         res.sendStatus(200);
@@ -66,16 +89,13 @@ app.post('/upload', upload.single('file'), (req, res) => {
     }
 });
 
-
-const Myurl = "https://n8n.dagestao.com/webhook/startorstop"
-
 // Rota para iniciar alguma ação
 app.get('/start', (req, res) => {
     // Define o parâmetro "type" como "start"
     const params = { type: 'start' };
 
     // Faz uma requisição GET para o serviço externo
-    axios.get(Myurl, { params })
+    axios.get(TriggerForListUrl , { params })
         .then(response => {
             // Se a ação for bem-sucedida, você pode enviar uma resposta 200 (OK).
             res.sendStatus(200);
@@ -93,7 +113,7 @@ app.get('/restart', (req, res) => {
     const params = { type: 'restart' };
 
     // Faz uma requisição GET para o serviço externo
-    axios.get(Myurl, { params })
+    axios.get(TriggerForListUrl , { params })
         .then(response => {
             // Se a ação for bem-sucedida, você pode enviar uma resposta 200 (OK).
             res.sendStatus(200);
@@ -112,7 +132,7 @@ app.get('/stop', (req, res) => {
     const params = { type: 'stop' };
 
     // Faz uma requisição GET para o serviço externo
-    axios.get(Myurl, { params })
+    axios.get(TriggerForListUrl , { params })
         .then(response => {
             // Se a ação for bem-sucedida, você pode enviar uma resposta 200 (OK).
             res.sendStatus(200);
@@ -124,8 +144,47 @@ app.get('/stop', (req, res) => {
         });
 });
 
+
+// Rota para iniciar alguma ação
+app.get('/enableTriggerForEvents', (req, res) => {
+    // Define o parâmetro "type" como "start"
+    const params = { type: 'enable' };
+
+    // Faz uma requisição GET para o serviço externo
+    axios.get(TriggerForEventsUrl , { params })
+        .then(response => {
+            // Se a ação for bem-sucedida, você pode enviar uma resposta 200 (OK).
+            res.sendStatus(200);
+        })
+        .catch(error => {
+            console.error('Erro ao fazer a requisição "start":', error);
+            // Em caso de erro, você pode enviar uma resposta de erro, como 500 (Internal Server Error).
+            res.sendStatus(500);
+        });
+});
+
+// Rota para iniciar alguma ação
+app.get('/disableTriggerForEvents', (req, res) => {
+    // Define o parâmetro "type" como "start"
+    const params = { type: 'disable' };
+
+    // Faz uma requisição GET para o serviço externo
+    axios.get(TriggerForEventsUrl , { params })
+        .then(response => {
+            // Se a ação for bem-sucedida, você pode enviar uma resposta 200 (OK).
+            res.sendStatus(200);
+        })
+        .catch(error => {
+            console.error('Erro ao fazer a requisição "start":', error);
+            // Em caso de erro, você pode enviar uma resposta de erro, como 500 (Internal Server Error).
+            res.sendStatus(500);
+        });
+});
+
+
+
 app.get('/search-status', (req, res) => {
-    const statusFilePath = path.join(__dirname, 'src', 'status.json');
+    const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForList', 'status.json');
 
     fs.readFile(statusFilePath, 'utf8', (err, data) => {
         if (err) {
@@ -144,8 +203,9 @@ app.get('/search-status', (req, res) => {
 });
 
 
-app.get('/search-progress', (req, res) => {
-    const statusFilePath = path.join(__dirname, 'src', 'status.json');
+app.get('/searchStatusTriggerForEvents', (req, res) => {
+    const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForEvents', 'status.json');
+
 
     fs.readFile(statusFilePath, 'utf8', (err, data) => {
         if (err) {
@@ -170,7 +230,7 @@ app.get('/set-status', (req, res) => {
     // Valide o novo valor, certificando-se de que atende aos requisitos desejados.
     if (newValue === 'started' || newValue === 'stopped' || newValue === 'processing') {
         // Leia o arquivo JSON existente.
-        const statusFilePath = path.join(__dirname, 'src', 'status.json');
+        const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForList', 'status.json');
         const existingData = require(statusFilePath);
 
         // Atualize o valor de "status" no objeto JSON.
@@ -186,6 +246,29 @@ app.get('/set-status', (req, res) => {
 });
 
 
+app.get('/setStatusTriggerForEvents', (req, res) => {
+    const newValue = req.query.value; // Obtém o valor do parâmetro "value" na URL.
+
+    // Valide o novo valor, certificando-se de que atende aos requisitos desejados.
+    if (newValue === 'activated' || newValue === 'disabled' || newValue === 'processing') {
+        // Leia o arquivo JSON existente.
+        const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForEvents', 'status.json');
+        const existingData = require(statusFilePath);
+
+        // Atualize o valor de "status" no objeto JSON.
+        existingData[0].status = newValue;
+
+        // Salve o objeto JSON atualizado de volta no arquivo.
+        fs.writeFileSync(statusFilePath, JSON.stringify(existingData, null, 2));
+
+        res.json({ success: true, message: 'Status atualizado com sucesso.' });
+    } else {
+        res.status(400).json({ error: 'O valor "value" deve ser "started" ou "stopped".' });
+    }
+});
+
+
+
 app.get('/set-line', (req, res) => {
     const newValue = req.query.value;
 
@@ -196,7 +279,7 @@ app.get('/set-line', (req, res) => {
 
     if (!isNaN(numericValue)) {
         // Leia o arquivo JSON existente.
-        const statusFilePath = path.join(__dirname, 'src', 'status.json');
+        const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForList', 'status.json');
         const existingData = require(statusFilePath);
 
         // Atualize o valor de "lastLine" no objeto JSON com o valor numérico.
@@ -217,7 +300,7 @@ app.get('/set-progress', (req, res) => {
 
 
     // Leia o arquivo JSON existente.
-    const statusFilePath = path.join(__dirname, 'src', 'status.json');
+    const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForList', 'status.json');
     const existingData = require(statusFilePath);
 
     // Atualize o valor de "status" no objeto JSON.

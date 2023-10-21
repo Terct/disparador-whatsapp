@@ -2,19 +2,19 @@
 <html>
 
 <head>
-    <title>Lista de Contatos</title>
+    <title>Disparador por Webhooks</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 
 <body>
-    <h1 id="titulo">Gerenciador de Disparos</h1>
+    <h1 id="titulo">Disparos por Evento</h1>
 
 
     <div id="Conteiner-Control">
         <h1 id="status"></h1>
-        <button id="restart-button">Iniciar</button>
-        <button id="stop-button">Parar</button>
-        <button id="start-button">Continuar</button>
+
+        <button id="enable-button">Ativar</button>
+        <button id="disable-button">Desativar</button>
 
         <h2>Status do Progresso: </h2>
         <h2 id="statusProgress"></h2>
@@ -28,16 +28,9 @@
 
         </div>
     </div>
-
-
-    <form id="upload-form" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".xlsx">
-        <button type="submit">Enviar Arquivo XLSX</button>
-    </form>
-
     
     <table>
-        <h1>Lista de Contatos</h1>
+        <h1>Registros</h1>
         <thead>
             <tr>
                 <th>Nome</th>
@@ -61,7 +54,7 @@
 
     <script>
         // Realize a requisição para obter a lista de contatos e preencher a tabela
-        fetch('/search-list')
+        fetch('/search-records')
             .then(response => response.json())
             .then(data => {
                 const contactList = document.getElementById('contact-list');
@@ -81,33 +74,9 @@
 
 
 
-        const uploadForm = document.getElementById('upload-form');
-
-        uploadForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(uploadForm);
-
-            try {
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (response.ok) {
-                    // Recarregue a página ou forneça algum feedback de sucesso após o upload.
-                    location.reload();
-                } else {
-                    console.error('Erro ao fazer upload do arquivo XLSX.');
-                }
-            } catch (error) {
-                console.error('Erro ao fazer upload do arquivo XLSX:', error);
-            }
-        });
-
-
-        document.getElementById('start-button').addEventListener('click', () => {
+        document.getElementById('enable-button').addEventListener('click', () => {
             // Faça uma requisição para a rota "/start" aqui
-            fetch('/start')
+            fetch('/enableTriggerForEvents')
                 .then(response => {
                     if (response.ok) {
                         console.log('Ação de Iniciar realizada com sucesso.');
@@ -118,9 +87,9 @@
                 .catch(error => console.error('Erro ao realizar ação de Iniciar:', error));
         });
 
-        document.getElementById('stop-button').addEventListener('click', () => {
+        document.getElementById('disable-button').addEventListener('click', () => {
             // Faça uma requisição para a rota "/stop" aqui
-            fetch('/stop')
+            fetch('/disableTriggerForEvents')
                 .then(response => {
                     if (response.ok) {
                         console.log('Ação de Parar realizada com sucesso.');
@@ -130,27 +99,13 @@
                 })
                 .catch(error => console.error('Erro ao realizar ação de Parar:', error));
         });
-
-        document.getElementById('restart-button').addEventListener('click', () => {
-            // Faça uma requisição para a rota "/stop" aqui
-            fetch('/restart')
-                .then(response => {
-                    if (response.ok) {
-                        console.log('Ação de Parar realizada com sucesso.');
-                    } else {
-                        console.error('Erro ao realizar ação de Parar.');
-                    }
-                })
-                .catch(error => console.error('Erro ao realizar ação de Parar:', error));
-        });
-
 
 
         const statusElementProgress = document.getElementById('statusProgress');
         const statusElement = document.getElementById('status');
 
         function getStatus() {
-            fetch('/search-status') // Substitua '/getStatus' pela rota correta
+            fetch('/searchStatusTriggerForEvents') // Substitua '/getStatus' pela rota correta
                 .then(response => response.json())
                 .then(data => {
                     //console.log(data[0])
