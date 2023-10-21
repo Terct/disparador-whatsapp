@@ -29,7 +29,7 @@ app.get('/TriggerForEvents', (req, res) => {
 
 
 const TriggerForListUrl = "https://n8n.dagestao.com/webhook/startorstop"
-const TriggerForEventsUrl = "https://n8n.dagestao.com/webhook-test/controllertriggerevents"
+const TriggerForEventsUrl = "https://n8n.dagestao.com/webhook/controllertriggerevents"
 
 
 app.get('/search-list', (req, res) => {
@@ -222,6 +222,28 @@ app.get('/searchStatusTriggerForEvents', (req, res) => {
         }
     });
 });
+
+
+app.get('/searchEventsTriggerForEvents', (req, res) => {
+    const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForEvents', 'events.json');
+
+
+    fs.readFile(statusFilePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Erro ao ler o arquivo status.json:', err);
+            res.status(500).json({ error: 'Erro ao buscar o arquivo' });
+        } else {
+            try {
+                const statusData = JSON.parse(data);
+                res.json(statusData);
+            } catch (error) {
+                console.error('Erro ao analisar o JSON:', error);
+                res.status(500).json({ error: 'Erro ao buscar o status' });
+            }
+        }
+    });
+});
+
 
 
 app.get('/set-status', (req, res) => {
