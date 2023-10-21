@@ -143,10 +143,25 @@
                 });
         }
 
-        getStatus(); // Chame a função para buscar o status quando a página for carregada
+        function getStatusLines() {
+            fetch('/fetch-instances?maxline=10') // Substitua '/getStatus' pela rota correta
+                .then(response => response.json())
+                .then(data => {
+                    //console.log(data[0])
+                    console.log(data)
+                })
+                .catch(error => {
+                  
+                });
+        }
+
+
+        getStatus();
+        //getStatusLines()
 
         // Atualize o status a cada 5 segundos (você pode ajustar o intervalo conforme necessário)
         setInterval(getStatus, 5000);
+        //setInterval(getStatusLines, 60000);
     </script>
 </body>
 

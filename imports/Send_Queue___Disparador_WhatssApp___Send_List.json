@@ -1,0 +1,650 @@
+{
+  "name": "Send Queue - Disparador WhatssApp - Send List",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "startorstop",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "03e14981-1156-4d91-96cb-aae927018be6",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        420,
+        340
+      ],
+      "webhookId": "c327fb18-8047-425d-ad55-3e7cfbef6bb9"
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/search-status",
+        "options": {}
+      },
+      "id": "d1445c3f-1472-43ea-b6b7-c79ea1ede2fc",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        900,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.query.type }}",
+              "operation": "contains",
+              "value2": "start"
+            }
+          ]
+        }
+      },
+      "id": "fc3cd832-aca0-4d3d-b089-0ddcd4d0cecb",
+      "name": "IF",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        680,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/search-status",
+        "options": {}
+      },
+      "id": "08ba9860-3cf1-4932-90de-771634262a73",
+      "name": "HTTP Request1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        920,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.status }}",
+              "value2": "stopped"
+            }
+          ]
+        }
+      },
+      "id": "0e220048-1cac-4946-8479-7d9caaa906ac",
+      "name": "IF1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/set-status?value=started",
+        "options": {}
+      },
+      "id": "0ea6daf7-f1d9-40c0-9206-1fb81e55a5dd",
+      "name": "HTTP Request2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1700,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/set-status?value=stopped",
+        "options": {}
+      },
+      "id": "77a4c6ed-1d18-4369-92ee-244ad477e515",
+      "name": "HTTP Request3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1380,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.status }}",
+              "value2": "=started"
+            }
+          ]
+        }
+      },
+      "id": "0ffb8845-fc5e-4ff4-a898-a04821e915e5",
+      "name": "IF2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"msg\":\"O disparo já está em execução \"}",
+        "options": {}
+      },
+      "id": "968886ca-16ad-438f-8b04-14b63cbc747e",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1460,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"msg\":\"O disparo já foi finalizado \"}",
+        "options": {}
+      },
+      "id": "f06995ba-0a34-446e-8849-48e189417717",
+      "name": "Respond to Webhook2",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1380,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/search-list",
+        "options": {}
+      },
+      "id": "33d1eea6-6c41-4a38-8ea8-a0e19aabf3dd",
+      "name": "HTTP Request4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1980,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"msg\":\"O disparo foi iniciado com sucesso\"}",
+        "options": {}
+      },
+      "id": "0c25daa2-a33f-4ce2-9fbe-693dbc9c2d77",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2280,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"msg\":\"O disparo foi parado com sucesso\"}",
+        "options": {}
+      },
+      "id": "c94e3525-c568-4461-8227-6140b9158634",
+      "name": "Respond to Webhook3",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1660,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('Webhook').first().json.query.type }}",
+              "value2": "start"
+            }
+          ]
+        }
+      },
+      "id": "f3762cb8-57e7-4782-90d2-036c3ba48f43",
+      "name": "IF3",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1460,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/set-status?value=started",
+        "options": {}
+      },
+      "id": "0133a763-4381-4ee1-b4d4-06d43c6b540e",
+      "name": "HTTP Request5",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2160,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/set-status?value=processing",
+        "options": {}
+      },
+      "id": "ad457e85-f037-402f-a213-92681b8d532b",
+      "name": "HTTP Request6",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1700,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "https://rabbit.dagestao.com/api/queues/%2f/disparador-whatsapp-list/contents",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "authorization",
+              "value": "Basic YWRtaW46QE1hc3RlcjMyKio="
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "7ea125f7-c38e-481f-a1a7-65a650a0306b",
+      "name": "HTTP Request7",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1940,
+        0
+      ],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "Aynk2FcCdkLW8Dyl",
+          "name": "Rabbit API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/search-list",
+        "options": {}
+      },
+      "id": "141938d7-ed6a-495d-ac6f-dbfad2ee2da3",
+      "name": "HTTP Request8",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2380,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "queue": "disparador-whatsapp-list",
+        "options": {
+          "arguments": {
+            "argument": [
+              {
+                "key": "x-queue-type",
+                "value": "quorum"
+              }
+            ]
+          },
+          "durable": true
+        }
+      },
+      "id": "1d6aa1cb-32af-4ca2-8feb-e16bb7573f04",
+      "name": "RabbitMQ",
+      "type": "n8n-nodes-base.rabbitmq",
+      "typeVersion": 1.1,
+      "position": [
+        2560,
+        0
+      ],
+      "credentials": {
+        "rabbitmq": {
+          "id": "YP8rYYzCeUnjB3xE",
+          "name": "RabbitMQ account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"msg\":\"O disparo foi reiniciado com sucesso\"}",
+        "options": {}
+      },
+      "id": "693e807b-12d0-4ff6-87e8-1051f5ecc33f",
+      "name": "Respond to Webhook4",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2760,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/set-progress",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "value",
+              "value": "=0/{{ $json.qtds }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "03cd0d85-981b-4628-89f4-a85bb487906a",
+      "name": "HTTP Request9",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        3300,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/search-list",
+        "options": {}
+      },
+      "id": "6997b91e-f0cb-45d1-8f76-aefd1ea86462",
+      "name": "HTTP Request10",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2940,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "var qtds = $input.all().length \nreturn  {qtds}"
+      },
+      "id": "295ebcc5-9037-43ee-8119-a2856f74dc22",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3120,
+        0
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "IF1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF1": {
+      "main": [
+        [
+          {
+            "node": "IF3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "IF2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request6": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request7": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request8": {
+      "main": [
+        [
+          {
+            "node": "RabbitMQ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RabbitMQ": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook4": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request10": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a0ce1bf8-ef46-4f68-8dff-6f37937146ea",
+  "id": "naFO0plZhYVN29Bc",
+  "meta": {
+    "instanceId": "a76daad38ea38732e88142c84abdc5e5a9b1758695f535a58a6a8a22fa4a1b5e"
+  },
+  "tags": []
+}

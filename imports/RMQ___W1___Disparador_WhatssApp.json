@@ -1,0 +1,1167 @@
+{
+  "name": "RMQ - W1 - Disparador-WhatssApp",
+  "nodes": [
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "Nome",
+              "stringValue": "={{ JSON.parse( $json.body[0].payload ).Nome }}"
+            },
+            {
+              "name": "Numero",
+              "stringValue": "={{ JSON.parse( $json.body[0].payload ).Numero }}"
+            },
+            {
+              "name": "MaxLine",
+              "type": "numberValue",
+              "numberValue": "6"
+            },
+            {
+              "name": "Evolution-URL",
+              "stringValue": "https://evolution.dagestao.com"
+            },
+            {
+              "name": "APIKEY",
+              "stringValue": "A2E9B8F5C7D1E3D6F4D8A1C0B2E7D1A3"
+            },
+            {
+              "name": "ServerUrl",
+              "stringValue": "http://192.95.37.240:2727"
+            },
+            {
+              "name": "Texto",
+              "stringValue": "Olá, isso é um teste"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4be34549-b19b-411c-9cac-786db68d9f1d",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.1,
+      "position": [
+        880,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Edit Fields').first().json.ServerUrl }}/search-status ",
+        "options": {}
+      },
+      "id": "f598f1f4-e1d8-4d49-b78c-6cccd5d324d4",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1140,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Edit Fields').first().json.ServerUrl }}/fetch-instances",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "maxline",
+              "value": "={{ $('Edit Fields').first().json.MaxLine }}"
+            },
+            {
+              "name": "evo",
+              "value": "={{ $('Edit Fields').first().json['Evolution-URL'] }}"
+            },
+            {
+              "name": "apikey",
+              "value": "={{ $('Edit Fields').first().json.APIKEY }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "be78d3f9-cb1f-4273-a9a2-0bcd829372b9",
+      "name": "HTTP Request1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1560,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $('Edit Fields1').first().json.currentLine }}",
+              "operation": "smallerEqual",
+              "value2": "={{ $json.maxOpen }}"
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "id": "d2432fb9-765d-49c0-803c-63ec06f89ca1",
+      "name": "IF",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1960,
+        80
+      ],
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "jsCode": "var num = $input.all().length -1\nvar maxOpen = $input.all()[num].json.line\nconsole.log(maxOpen)\nreturn {maxOpen}"
+      },
+      "id": "5c1830f6-77ce-495e-ba4e-8be5d18d562a",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "currentLine",
+              "type": "numberValue",
+              "numberValue": "={{ $json.lastLine + 1 }} "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e4b6208e-b21c-41a8-b8a7-05a54f75f9fb",
+      "name": "Edit Fields1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.1,
+      "position": [
+        1360,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Edit Fields').first().json.ServerUrl }}/fetch-instances",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "maxline",
+              "value": "={{ $('Edit Fields').first().json.MaxLine }}"
+            },
+            {
+              "name": "evo",
+              "value": "={{ $('Edit Fields').first().json['Evolution-URL'] }}"
+            },
+            {
+              "name": "apikey",
+              "value": "={{ $('Edit Fields').first().json.APIKEY }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "21182e12-1eac-401a-85d4-90033ca62de3",
+      "name": "HTTP Request3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2180,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.line }}",
+              "operation": "equal",
+              "value2": "={{ $('Edit Fields1').first().json.currentLine }}"
+            }
+          ]
+        }
+      },
+      "id": "8f57c6e0-cb2b-4018-854e-f973c6e84517",
+      "name": "Filter",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 1,
+      "position": [
+        2440,
+        -120
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.line }}",
+              "operation": "equal",
+              "value2": "={{ $('Edit Fields1').first().json.currentLine }}"
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "id": "1b123740-7ccb-47c9-86c5-2fbcac7717c3",
+      "name": "IF1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        2700,
+        -120
+      ],
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Edit Fields').first().json['Evolution-URL'] }}/message/sendText/Line{{ $json.line }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('Edit Fields').first().json['APIKEY'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"number\": \"{{ $('Edit Fields').first().json['Numero'] }}\",\n    \"options\": {\n        \"delay\": 1200,\n        \"presence\": \"composing\",\n        \"linkPreview\": false\n    },\n    \"textMessage\": {\n        \"text\": \"teste\"\n    }\n} \n",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 2000
+            }
+          },
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "bab77cc1-4407-4d85-a37c-c7c796236f75",
+      "name": "Enviar Resposta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        3000,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=http://192.95.37.240:2727/set-line?value={{ $('Edit Fields1').first().json.currentLine }}",
+        "options": {}
+      },
+      "id": "419ac8b0-0f35-44f0-8788-b0a54c23d140",
+      "name": "HTTP Request6",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        3240,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=http://192.95.37.240:2727/set-line?value=1",
+        "options": {}
+      },
+      "id": "57696a20-847b-4500-9b30-53eef8a2f53e",
+      "name": "HTTP Request7",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2440,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Edit Fields').first().json['Evolution-URL'] }}/message/sendText/Line1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('Edit Fields').first().json['APIKEY'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"number\": \"{{ $('Edit Fields').first().json['Numero'] }}\",\n    \"options\": {\n        \"delay\": 1200,\n        \"presence\": \"composing\",\n        \"linkPreview\": false\n    },\n    \"textMessage\": {\n        \"text\": \"teste\"\n    }\n} \n",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 2000
+            }
+          },
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "a00b08e1-5aed-4f5d-8172-a5da4e7a42d9",
+      "name": "Enviar Resposta1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2180,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Edit Fields').first().json.ServerUrl }}/fetch-instances",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "maxline",
+              "value": "={{ $('Edit Fields').first().json.MaxLine }}"
+            },
+            {
+              "name": "evo",
+              "value": "={{ $('Edit Fields').first().json['Evolution-URL'] }}"
+            },
+            {
+              "name": "apikey",
+              "value": "={{ $('Edit Fields').first().json.APIKEY }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "77f40ada-4627-4a57-b163-826c31d8fdda",
+      "name": "HTTP Request4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2980,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.nextLine }}",
+              "operation": "larger",
+              "value2": "={{ $('Edit Fields1').first().json.currentLine }}"
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "id": "f39b5efa-052d-4e18-977b-32568f726fd7",
+      "name": "IF2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        3720,
+        -100
+      ],
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.line }}",
+              "operation": "larger",
+              "value2": "={{ $('Edit Fields1').first().json.currentLine }}"
+            }
+          ]
+        }
+      },
+      "id": "b9f8961f-251d-4369-b798-6131223f08d9",
+      "name": "Filter1",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 1,
+      "position": [
+        3240,
+        -100
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "var nextLine = $input.item.json.line\nreturn {nextLine}"
+      },
+      "id": "b7824bcf-6ee1-413f-b8d0-79917dba6986",
+      "name": "Code1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3480,
+        -100
+      ],
+      "alwaysOutputData": true,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Edit Fields').first().json['Evolution-URL'] }}/message/sendText/Line{{ $json.nextLine}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('Edit Fields').first().json['APIKEY'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"number\": \"{{ $('Edit Fields').first().json['Numero'] }}\",\n    \"options\": {\n        \"delay\": 1200,\n        \"presence\": \"composing\",\n        \"linkPreview\": false\n    },\n    \"textMessage\": {\n        \"text\": \"teste\"\n    }\n} \n",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 2000
+            }
+          },
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "e6a2b46b-8014-457b-855e-b15e1d0f7319",
+      "name": "Enviar Resposta2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        4000,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=http://192.95.37.240:2727/set-line?value={{ $('Code1').item.json.nextLine }}",
+        "options": {}
+      },
+      "id": "a58bf58e-b2ff-450f-8b86-c03058f58782",
+      "name": "HTTP Request9",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        4280,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=http://192.95.37.240:2727/set-line?value=1",
+        "options": {}
+      },
+      "id": "2cbad667-afa7-4f57-a511-4901f479dda5",
+      "name": "HTTP Request10",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        4280,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Edit Fields').first().json['Evolution-URL'] }}/message/sendText/Line1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('Edit Fields').first().json['APIKEY'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"number\": \"{{ $('Edit Fields').first().json['Numero'] }}\",\n    \"options\": {\n        \"delay\": 1200,\n        \"presence\": \"composing\",\n        \"linkPreview\": false\n    },\n    \"textMessage\": {\n        \"text\": \"teste\"\n    }\n} \n",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 2000
+            }
+          },
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "dbc528db-8c0f-44e8-87c5-d84e436f26a1",
+      "name": "Enviar Resposta3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        4000,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rabbit.dagestao.com/api/queues/%2f/disparador-whatsapp-list/get",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "authorization",
+              "value": "Basic YWRtaW46QE1hc3RlcjMyKio="
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "count",
+              "value": "1"
+            },
+            {
+              "name": "ackmode",
+              "value": "ack_requeue_false"
+            },
+            {
+              "name": "encoding",
+              "value": "auto"
+            },
+            {
+              "name": "truncate",
+              "value": "50000"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "6a249d6e-e912-4fa5-900b-2fe8b00c4bae",
+      "name": "HTTP Request8",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        620,
+        80
+      ],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "Aynk2FcCdkLW8Dyl",
+          "name": "Rabbit API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "id": "b9d78ec4-b8cc-4a2d-9a9a-e8d149e5c301",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -60,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/search-status",
+        "options": {}
+      },
+      "id": "3db860d9-4769-4dc4-af9c-33ee25731cd6",
+      "name": "HTTP Request2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.status }}",
+              "operation": "contains",
+              "value2": "started"
+            }
+          ]
+        }
+      },
+      "id": "decbd7eb-3f94-4849-b5b9-6a60096a1789",
+      "name": "IF3",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        380,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/set-progress",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "value",
+              "value": "={{ (parseInt($json.progress.split('/')[0]) + 1) + '/' + $json.progress.split('/')[1] }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "99dd6815-47be-4743-a91a-9f4711c13377",
+      "name": "HTTP Request5",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        4680,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/search-status",
+        "options": {}
+      },
+      "id": "51530cfe-2614-4bd1-af6a-24b893e40057",
+      "name": "HTTP Request11",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        4480,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/set-progress",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "value",
+              "value": "={{ (parseInt($json.progress.split('/')[0]) + 1) + '/' + $json.progress.split('/')[1] }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "37b2a6cb-1d5b-4520-b7bc-cd439766ab03",
+      "name": "HTTP Request12",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        4680,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/search-status",
+        "options": {}
+      },
+      "id": "785ebce0-9d22-4f6d-bf7e-8ee492861a62",
+      "name": "HTTP Request13",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        4480,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/set-progress",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "value",
+              "value": "={{ (parseInt($json.progress.split('/')[0]) + 1) + '/' + $json.progress.split('/')[1] }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "ff83fea0-ba7b-4998-ad64-c99b6f8acc2c",
+      "name": "HTTP Request14",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        3640,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/search-status",
+        "options": {}
+      },
+      "id": "9a16219c-e9e7-4578-9c25-38eaaa886b9a",
+      "name": "HTTP Request15",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        3440,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/set-progress",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "value",
+              "value": "={{ (parseInt($json.progress.split('/')[0]) + 1) + '/' + $json.progress.split('/')[1] }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "418c13f8-3b09-4c54-9c34-49ec90ab42d3",
+      "name": "HTTP Request16",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2880,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://192.95.37.240:2727/search-status",
+        "options": {}
+      },
+      "id": "2b31dea9-02f5-4a0b-89a3-d397a0f444c8",
+      "name": "HTTP Request17",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2680,
+        100
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Resposta1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "IF1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF1": {
+      "main": [
+        [
+          {
+            "node": "Enviar Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Resposta": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Resposta1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "IF2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF2": {
+      "main": [
+        [
+          {
+            "node": "Enviar Resposta2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Resposta3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Resposta2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Resposta3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request8": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "IF3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request11": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request10": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request13": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request9": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request15": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request6": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request17": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request7": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request17",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c0eabf3c-2478-4a14-8142-c7d0c3f25672",
+  "id": "JylNLQs5rfyeFxrZ",
+  "meta": {
+    "instanceId": "a76daad38ea38732e88142c84abdc5e5a9b1758695f535a58a6a8a22fa4a1b5e"
+  },
+  "tags": []
+}
