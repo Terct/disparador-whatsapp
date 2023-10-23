@@ -1,8 +1,8 @@
 [
   {
-    "status": "activated",
+    "status": "disabled",
     "lastLine": 0,
-    "maxLines": 10,
+    "maxLines": 5,
     "progress": "0"
   }
 ]

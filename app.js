@@ -612,6 +612,40 @@ app.get('/fetch-instances', async (req, res) => {
     res.json(instances);
 });
 
+// Rota para adicionar um novo registro
+app.post('/set-records', (req, res) => {
+    const { Nome, Numero, Status, Hora, Linha, msg } = req.body;
+
+    if (!Nome || !Numero || !Status || !Hora || !Linha || !msg) {
+        return res.status(400).json({ error: 'Todos os campos (Nome, Numero, Status, Hora, Linha, msg) são obrigatórios.' });
+    }
+
+    const newRecord = {
+        Nome,
+        Numero,
+        Status,
+        Hora,
+        Linha,
+        msg
+    };
+
+    const recordsFilePath = path.join(__dirname, 'src', 'database', 'TriggerForEvents', 'records.json');
+    let existingRecords;
+
+    try {
+        existingRecords = JSON.parse(fs.readFileSync(recordsFilePath));
+    } catch (error) {
+        existingRecords = [];
+    }
+
+    existingRecords.push(newRecord);
+
+    fs.writeFileSync(recordsFilePath, JSON.stringify(existingRecords, null, 2));
+    
+    res.send('Registro adicionado com sucesso');
+});
+
+
 
 app.listen(port, () => {
     console.log(`API está rodando em http://localhost:${port}`);

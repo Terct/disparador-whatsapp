@@ -1,19 +1,10 @@
 [
-    {
-      "Nome": "Armando",
-      "Numero": 557188989639,
-      "Status": "Enviado",
-      "Hora": "10:31",
-      "Linha": "Line1",
-      "msg": "Bem vindo"
-
-    },
-    {
-      "Nome": "Maria",
-      "Numero": 557188989639,
-      "Status": "Enviado",
-      "Hora": "10:31",
-      "Linha": "Line2",
-      "msg": "Bem vindo"
-    }
+  {
+    "Nome": "João",
+    "Numero": 1234567890,
+    "Status": "Enviado",
+    "Hora": "14:45",
+    "Linha": "Line3",
+    "msg": "Olá, mundo!"
+  }
 ]

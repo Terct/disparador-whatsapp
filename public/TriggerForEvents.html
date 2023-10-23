@@ -133,7 +133,7 @@
 
         // Função para abrir o modal de edição
         function openEditEventsModal() {
-            const modal = document.getElementById('edit--modal');
+            const modal = document.getElementById('edit-events-modal');
             modal.style.display = 'block';
         }
 
@@ -144,41 +144,44 @@
         }
 
 
+        function SearchRecords() {
 
-        // Realize a requisição para obter a lista de contatos e preencher a tabela
-        fetch('/search-records')
-            .then(response => response.json())
-            .then(data => {
-                const contactList = document.getElementById('contact-list');
-                data.forEach(contact => {
-                    const row = document.createElement('tr');
-                    const nameCell = document.createElement('td');
-                    const numberCell = document.createElement('td');
-                    const statusCell = document.createElement('td');
-                    const hourCell = document.createElement('td');
-                    const lineCell = document.createElement('td');
-                    const msgCell = document.createElement('td');
+            const contactList = document.getElementById('contact-list');
+            // Limpa a tabela removendo todos os elementos filhos
+            contactList.innerHTML = '';
+            // Realize a requisição para obter a lista de contatos e preencher a tabela
+            fetch('/search-records')
+                .then(response => response.json())
+                .then(data => {
+                    const contactList = document.getElementById('contact-list');
+                    data.forEach(contact => {
+                        const row = document.createElement('tr');
+                        const nameCell = document.createElement('td');
+                        const numberCell = document.createElement('td');
+                        const statusCell = document.createElement('td');
+                        const hourCell = document.createElement('td');
+                        const lineCell = document.createElement('td');
+                        const msgCell = document.createElement('td');
 
-                    nameCell.textContent = contact.Nome;
-                    numberCell.textContent = contact.Numero;
-                    statusCell.textContent = contact.Status;
-                    hourCell.textContent = contact.Hora;
-                    lineCell.textContent = contact.Linha;
-                    msgCell.textContent = contact.msg;
+                        nameCell.textContent = contact.Nome;
+                        numberCell.textContent = contact.Numero;
+                        statusCell.textContent = contact.Status;
+                        hourCell.textContent = contact.Hora;
+                        lineCell.textContent = contact.Linha;
+                        msgCell.textContent = contact.msg;
 
-                    console.log(contact)
-                    row.appendChild(nameCell);
-                    row.appendChild(numberCell);
-                    row.appendChild(statusCell);
-                    row.appendChild(hourCell);
-                    row.appendChild(lineCell);
-                    row.appendChild(msgCell);
-                    contactList.appendChild(row);
-                });
-            })
-            .catch(error => console.error('Erro ao buscar a lista de contatos:', error));
+                        row.appendChild(nameCell);
+                        row.appendChild(numberCell);
+                        row.appendChild(statusCell);
+                        row.appendChild(hourCell);
+                        row.appendChild(lineCell);
+                        row.appendChild(msgCell);
+                        contactList.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Erro ao buscar a lista de contatos:', error));
 
-
+        }
 
         document.getElementById('enable-button').addEventListener('click', () => {
             // Faça uma requisição para a rota "/start" aqui
@@ -219,7 +222,7 @@
                     statusElementProgress.textContent = `${data[0].progress}`;
                     statusElement.textContent = `Situação: ${data[0].status}`;
                     statusMaxLines.textContent = `${data[0].maxLines}`;
-
+                    
                 })
                 .catch(error => {
                     console.error('Erro ao buscar o status do progresso:', error);
@@ -379,11 +382,13 @@
             }
         });
 
-
+        SearchRecords()
         getStatus();
         //getStatusLines()
 
         // Atualize o status a cada 5 segundos (você pode ajustar o intervalo conforme necessário)
+        
+        setInterval(SearchRecords, 30000);
         setInterval(getStatus, 5000);
         //setInterval(getStatusLines, 60000);
     </script>
