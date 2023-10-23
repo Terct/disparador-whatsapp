@@ -9,6 +9,14 @@
 <body>
     <h1 id="titulo">Gerenciador de Disparos</h1>
 
+    <div id="Conteiner-Control-MaxLine">
+
+        <h1>Maximo de Linhas</h1>
+        <h2 id="MaxLinesH2"></h2>
+
+        <button id="edit-Max-Line" onclick="openEditEventsModalMaxLines()">Editar</button>
+
+    </div>
 
     <div id="Conteiner-Control">
         <h1 id="status"></h1>
@@ -21,12 +29,18 @@
     </div>
 
     <div id="Elements-Control">
-        <div id="Conteiner-Settings">
+
+        <div id="showbotoes">
             <button id="showLines">Acompanhar Linhas</button>
-
-            <div id="ListLines"></div>
-
+            <button id="showMsgs" onclick="openEditModal()">Editar Mensagens</button>
         </div>
+
+        <div id="Conteiner-Settings" style="display: none;">
+            <p>Última Verificação:</p>
+            <p id="ultAtulizacao"></p>
+            <div id="ListLines"></div>
+        </div>
+
     </div>
 
 
@@ -35,7 +49,7 @@
         <button type="submit">Enviar Arquivo XLSX</button>
     </form>
 
-    
+
     <table>
         <h1>Lista de Contatos</h1>
         <thead>
@@ -59,7 +73,56 @@
         </div>
     </div>
 
+
+
+    <div id="EdiMaxLines" class="modal">
+        <span class="close" id="close-edit-modal" onclick="closeEditModalMaxLines()">&times;</span>
+        <div class="modal-content">
+            <span class="close" id="close-edit-modal" onclick="closeEditModalMaxLines()">&times;</span>
+            <h2>Máximo de Linhas</h2>
+            <input type="number" id="value-maxlines" placeholder="Quantidade máxima">
+            <button id="save-maxline">Salvar</button>
+        </div>
+    </div>
+
+
+
+    <div id="edit-messages-modal" class="modal" style="display: none;">
+        <div id="modal-content-editMensagem" class="modal-content">
+            <span class="close" id="close-edit-modal" onclick="closeEditModal()">&times;</span>
+            <iframe id="edit-messages-iframe" src="/edittexts"></iframe>
+        </div>
+    </div>
+
     <script>
+
+        // Função para abrir o modal de edição
+        function openEditModal() {
+            const modal = document.getElementById('edit-messages-modal');
+            modal.style.display = 'block';
+        }
+
+        // Função para fechar o modal de edição
+        function closeEditModal() {
+            const modal = document.getElementById('edit-messages-modal');
+            modal.style.display = 'none';
+        }
+
+
+        // Função para abrir o modal de edição
+        function openEditEventsModalMaxLines() {
+            const modal = document.getElementById('EdiMaxLines');
+            modal.style.display = 'block';
+        }
+
+        // Função para fechar o modal de edição
+        function closeEditModalMaxLines() {
+            const modal = document.getElementById('EdiMaxLines');
+            modal.style.display = 'none';
+        }
+
+
+
         // Realize a requisição para obter a lista de contatos e preencher a tabela
         fetch('/search-list')
             .then(response => response.json())
@@ -148,6 +211,7 @@
 
         const statusElementProgress = document.getElementById('statusProgress');
         const statusElement = document.getElementById('status');
+        const statusMaxLines = document.getElementById('MaxLinesH2');
 
         function getStatus() {
             fetch('/search-status') // Substitua '/getStatus' pela rota correta
@@ -156,6 +220,7 @@
                     //console.log(data[0])
                     statusElementProgress.textContent = `${data[0].progress}`;
                     statusElement.textContent = `Situação: ${data[0].status}`;
+                    statusMaxLines.textContent = `${data[0].maxLines}`;
 
                 })
                 .catch(error => {
@@ -213,6 +278,13 @@
             table.appendChild(thead);
             table.appendChild(tbody);
             showLinesDiv.appendChild(table);
+
+            const ConterinerTabela = document.getElementById("Conteiner-Settings")
+            ConterinerTabela.style.display = 'block'
+
+            document.getElementById("ultAtulizacao").textContent = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+
         }
 
         // Função para exibir o modal de login
@@ -270,7 +342,41 @@
             }
         });
 
+        // Função para fazer login e chamar getLinesAndCreateTable
+        function SetMaxLines(valueC) {
 
+            const fetchUrl = `/set-MaxLines?value=${valueC}`;
+            fetch(fetchUrl)
+                .then(response => response.json())
+                .then(data => {
+                    // Chame a função para criar a tabela das linhas com os dados obtidos
+                    alert('Quantidade Maxima de linhas Alterada com sucesso!')
+                })
+                .catch(error => {
+                    console.error('Erro ao alterar', error);
+                });
+
+        }
+
+
+
+        document.getElementById('save-maxline').addEventListener('click', () => {
+            ValueMaxLines = document.getElementById('value-maxlines').value;
+
+            // Verifique se os campos foram preenchidos
+            if (ValueMaxLines) {
+                // Chame a função de login e busca de linhas imediatamente
+                SetMaxLines(ValueMaxLines);
+
+                // Feche o modal após o login
+                const loginModal = document.getElementById('EdiMaxLines');
+                loginModal.style.display = 'none';
+
+
+            } else {
+                alert('Preencha todos os campos para fazer o login.');
+            }
+        });
 
 
         getStatus();

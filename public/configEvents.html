@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Disparador por Webhooks</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+
+<body>
+    <h1 id="titulo">Gerenciador de Eventos</h1>
+
+    <!-- Novo campo de entrada de texto -->
+    <div id="add-event">
+        <h2>Adicionar Novo Evento</h2>
+
+        <input type="text" id="new-event-name" placeholder="Nome" />
+        <input type="number" id="new-event-mensagemid" placeholder="Mensagem ID" />
+        <input type="text" id="new-event-params" placeholder="Valor do Parametro" />
+
+        <button id="add-event-button">Adicionar</button>
+    </div>
+
+
+
+    <table>
+        <h1>Eventos Registrados</h1>
+        <thead>
+            <tr>
+                <th>Nome da Ação</th>
+                <th>Mensagem ID</th>
+                <th>Parametros</th> <!-- Nova coluna de ações -->
+                <th>Ações</th>
+            </tr>
+        </thead>
+
+
+        <tbody id="texts-list">
+            <!-- Dados da lista serão preenchidos aqui -->
+        </tbody>
+    </table>
+
+    <!-- Modal de edição -->
+    <div id="edit-modal" class="modal">
+        <div id="edit-modal-contente-editEvent" class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2 id="h2-event-edit">Editar Evento</h2>
+
+
+            <input type="text" id="NomeActions" placeholder="Nome da sua ação">
+
+
+            <input type="number" id="TextID" placeholder="O ID da mensagem que será enviada">
+
+
+            <input type="text" id="Params" placeholder="Valor do parametro que ira receber">
+
+            <br>
+            <button id="save-edit">Salvar</button>
+            </br>
+        </div>
+    </div>
+
+
+    <script>
+
+
+        // Preencha a tabela com dados
+        fetch('/searchEventsTriggerForEvents')
+            .then(response => response.json())
+            .then(data => {
+                const contactList = document.getElementById('texts-list');
+                data.forEach(contact => {
+                    const row = document.createElement('tr');
+                    const nameCell = document.createElement('td');
+                    const numberCell = document.createElement('td');
+                    const paramsCell = document.createElement('td');
+                    const actionsCell = document.createElement('td');
+
+                    nameCell.textContent = contact.name;
+                    numberCell.textContent = contact.text;
+                    paramsCell.textContent = contact.params;
+
+
+                    // Botão Editar
+                    const editButton = document.createElement('button');
+                    editButton.textContent = 'Editar';
+                    editButton.addEventListener('click', () => {
+                        openEditModal(contact.name, contact.text, contact.params);
+                    });
+
+                    // Botão Excluir
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Excluir';
+                    deleteButton.addEventListener('click', () => {
+                        if (confirm('Tem certeza de que deseja excluir este item?')) {
+                            deleteText(contact.params);
+                        }
+                    });
+
+                    actionsCell.appendChild(editButton);
+                    actionsCell.appendChild(deleteButton);
+
+
+                    row.appendChild(nameCell);
+                    row.appendChild(numberCell);
+                    row.appendChild(paramsCell);
+                    row.appendChild(actionsCell);
+
+                    contactList.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Erro ao buscar a lista de contatos:', error));
+
+
+        // Função para preencher o modal de edição
+        function fillEditModal(nome, messageid, params) {
+            const editNameInput = document.getElementById('NomeActions');
+            const editMessageInput = document.getElementById('TextID');
+            const editParamsInput = document.getElementById('Params');
+
+            editNameInput.value = nome;
+            editMessageInput.value = messageid;
+            editParamsInput.value = params;
+
+            const saveEditButton = document.getElementById('save-edit');
+            saveEditButton.onclick = () => {
+                const newName = editNameInput.value; // Obter o novo nome
+                const newMessageId = editMessageInput.value;
+                const newParams = editParamsInput.value
+
+                fetch(`/edit-event/${params}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: newName, messageid: newMessageId, newparams: newParams }),
+                })
+                    .then(response => response.text())
+                    .then(data => {
+                        location.reload(); // Atualiza a página após a edição
+                    })
+                    .catch(error => console.error('Erro ao editar:', error));
+            };
+        }
+
+
+
+
+
+        // Função para abrir o modal de edição
+        function openEditModal(name, messageid, params) {
+            fillEditModal(name, messageid, params);
+            const modal = document.getElementById('edit-modal');
+            modal.style.display = 'block';
+        }
+
+        // Função para fechar o modal de edição
+        function closeEditModal() {
+            const modal = document.getElementById('edit-modal');
+            modal.style.display = 'none';
+        }
+
+        // Função para deletar um texto
+        function deleteText(params) {
+            fetch(`/delete-event/${params}`, {
+                method: 'DELETE',
+            })
+                .then(response => response.text())
+                .then(data => {
+                    alert(data);
+                    location.reload(); // Atualiza a página após a exclusão
+                })
+                .catch(error => console.error('Erro ao deletar:', error));
+        }
+
+        const addTextButton = document.getElementById('add-event-button');
+        addTextButton.addEventListener('click', () => {
+            const newEventName = document.getElementById('new-event-name').value;
+            const newEventMensagemId = document.getElementById('new-event-mensagemid').value;
+            const newEventParams = document.getElementById('new-event-params').value;
+            if (newEventParams.trim() === '') {
+                alert('Por favor, insira um parametro válida.');
+                return;
+            }
+
+            fetch('/add-event', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: newEventName, mensagemid: newEventMensagemId, params: newEventParams }),
+            })
+                .then(response => response.text())
+                .then(data => {
+                    alert(data);
+                    document.getElementById('new-event-name').value = '';
+                    document.getElementById('new-event-mensagemid').value = ''; // Limpar o campo de entrada
+                    document.getElementById('new-event-params').value = '';
+                    location.reload(); // Atualiza a página após a adição
+                })
+                .catch(error => console.error('Erro ao adicionar:', error));
+        });
+
+    </script>
+</body>
+
+</html>

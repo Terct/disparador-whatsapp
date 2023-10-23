@@ -32,6 +32,7 @@ tr:nth-child(odd) {
     background-color: #2d313a;
 }
 
+
 button {
     background-color: #63a69f;
     color: #fff;
@@ -72,6 +73,17 @@ form {
     border-radius: 20px;
 }
 
+
+#Conteiner-Control-MaxLine{
+    background-color: rgb(77, 75, 75);
+    padding: 10px;
+    width: 350px;
+    text-align: center;
+    border-radius: 20px;
+    margin-bottom: 30px;
+}
+
+
 .hiddenCenter{
     display: none;
 
@@ -81,7 +93,7 @@ form {
 #Conteiner-Settings{
     background-color: rgb(77, 75, 75);
     padding: 10px;
-    width: 350px;
+    width: 400px;
     text-align: center;
     border-radius: 20px;
 }
@@ -91,7 +103,8 @@ form {
     margin: 10px; /* Adiciona margem para ajustar a posição */ 
     padding: 10px;
     z-index: 999;
-    margin-top: -260px;
+    margin-top: -490px;
+    text-align: center;
 }
 
 
@@ -124,4 +137,140 @@ form {
     top: 10px;
     right: 10px;
     cursor: pointer;
+}
+.online {
+    color: rgb(74, 241, 74);
+}
+.offline{
+    color: red;
+}
+
+#showbotoes{
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 30px;
+    border-radius: 5px;
+}
+
+#ListLines{
+    border-radius: 20px;
+}
+
+/* CSS para o modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 255, 200, 0.2);
+    padding: 20px;
+    border: 1px solid rgba(0, 255, 200, 0.2);
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+.close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* CSS para o iframe */
+iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+
+#edit-messages-modal{
+
+    width: 100%;
+    height: 100%;
+}
+#modal-content-editMensagem{
+    width: 70%;
+    height: 70%;
+}
+
+#edit-modal{
+    width: 100%;
+    height: 100%;
+}
+
+#edit-modal-contente-editext{
+    width: 30%;
+    height: 30%;
+}
+
+#edit-message{
+    width: 100%;
+    height: 60%;
+}
+#new-text{
+    width: 30%;
+    height: 30px
+
+}
+
+#h2-text-edit{
+    margin-top: -10px;
+}
+
+#NomeActions, #TextID, #Params{
+    height: 30px;
+    width: 80%;
+    margin-bottom: 5px;
+}
+
+#h2-event-edit{
+    margin-top: -5px;
+}
+
+#edit-modal-contente-ediEvent{
+    width: 30%;
+    height: 10%;
+    
+}
+
+#new-event-name, #new-event-mensagemid, #new-event-params{
+    height: 30px;
+}
+
+
+#edit-events-modal{
+
+    width: 100%;
+    height: 100%;
+}
+#modal-content-editEvents{
+    width: 70%;
+    height: 70%;
+}
+
+#edit-modal{
+    width: 100%;
+    height: 100%;
+}
+
+#edit-modal-contente-editEvent{
+    width: 30%;
+    height: 30%;
+}
+
+#value-maxlines{
+    height: 30px;
+    width: 50%;
 }

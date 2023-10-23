@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Disparador por Webhooks</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+
+<body>
+    <h1 id="titulo">Gerenciador de Mensagens</h1>
+
+    <!-- Novo campo de entrada de texto -->
+    <div id="add-text">
+        <h2>Adicionar Novo Texto</h2>
+        <input type="text" id="new-text" placeholder="Nova mensagem" />
+        <button id="add-text-button">Adicionar</button>
+    </div>
+
+
+    <table>
+        <h1>Registros</h1>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Mensagem</th>
+                <th>Ações</th> <!-- Nova coluna de ações -->
+            </tr>
+        </thead>
+
+
+        <tbody id="texts-list">
+            <!-- Dados da lista serão preenchidos aqui -->
+        </tbody>
+    </table>
+
+    <!-- Modal de edição -->
+    <div id="edit-modal" class="modal">
+        <div id="edit-modal-contente-editext" class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2 id="h2-text-edit">Editar Mensagem</h2>
+            <textarea id="edit-message" placeholder="Insira sua mensagem aqui" rows="4" cols="50"></textarea>
+            <button id="save-edit">Salvar</button>
+        </div>
+    </div>
+
+    <script>
+        // Função para preencher o modal de edição (como antes)
+
+        // Função para abrir o modal de edição
+        function openEditModal(id, message) {
+            fillEditModal(id, message);
+            const modal = document.getElementById('edit-modal');
+            modal.style.display = 'block';
+        }
+
+        // Função para fechar o modal de edição
+        function closeEditModal() {
+            const modal = document.getElementById('edit-modal');
+            modal.style.display = 'none';
+        }
+
+        // Função para deletar um texto (como antes)
+
+        // Preencha a tabela com dados
+        fetch('/searchTextsTriggerForEvents')
+            .then(response => response.json())
+            .then(data => {
+                const contactList = document.getElementById('texts-list');
+                data.forEach(contact => {
+                    const row = document.createElement('tr');
+                    const nameCell = document.createElement('td');
+                    const numberCell = document.createElement('td');
+                    const actionsCell = document.createElement('td'); // Nova coluna para botões
+
+                    nameCell.textContent = contact.id;
+                    numberCell.textContent = contact.text;
+
+                    // Botão Editar
+                    const editButton = document.createElement('button');
+                    editButton.textContent = 'Editar';
+                    editButton.addEventListener('click', () => {
+                        openEditModal(contact.id, contact.text);
+                    });
+
+                    // Botão Excluir
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Excluir';
+                    deleteButton.addEventListener('click', () => {
+                        if (confirm('Tem certeza de que deseja excluir este item?')) {
+                            deleteText(contact.id);
+                        }
+                    });
+
+                    actionsCell.appendChild(editButton);
+                    actionsCell.appendChild(deleteButton);
+
+                    row.appendChild(nameCell);
+                    row.appendChild(numberCell);
+                    row.appendChild(actionsCell);
+
+                    contactList.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Erro ao buscar a lista de contatos:', error));
+
+        // Função para preencher o modal de edição
+        function fillEditModal(id, message) {
+            const editMessageInput = document.getElementById('edit-message');
+            editMessageInput.value = message;
+
+            const saveEditButton = document.getElementById('save-edit');
+            saveEditButton.onclick = () => {
+                const newText = editMessageInput.value;
+                fetch(`/edit-text/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: newText }),
+                })
+                    .then(response => response.text())
+                    .then(data => {
+                        location.reload(); // Atualiza a página após a edição
+                    })
+                    .catch(error => console.error('Erro ao editar:', error));
+            };
+        }
+
+        // Função para abrir o modal de edição
+        function openEditModal(id, message) {
+            fillEditModal(id, message);
+            const modal = document.getElementById('edit-modal');
+            modal.style.display = 'block';
+        }
+
+        // Função para fechar o modal de edição
+        function closeEditModal() {
+            const modal = document.getElementById('edit-modal');
+            modal.style.display = 'none';
+        }
+
+        // Função para deletar um texto
+        function deleteText(id) {
+            fetch(`/delete-text/${id}`, {
+                method: 'DELETE',
+            })
+                .then(response => response.text())
+                .then(data => {
+                    alert(data);
+                    location.reload(); // Atualiza a página após a exclusão
+                })
+                .catch(error => console.error('Erro ao deletar:', error));
+        }
+
+        const addTextButton = document.getElementById('add-text-button');
+        addTextButton.addEventListener('click', () => {
+            const newText = document.getElementById('new-text').value;
+            if (newText.trim() === '') {
+                alert('Por favor, insira uma mensagem válida.');
+                return;
+            }
+
+            fetch('/add-text', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: newText }),
+            })
+                .then(response => response.text())
+                .then(data => {
+                    alert(data);
+                    document.getElementById('new-text').value = ''; // Limpar o campo de entrada
+                    location.reload(); // Atualiza a página após a adição
+                })
+                .catch(error => console.error('Erro ao adicionar:', error));
+        });
+    </script>
+</body>
+
+</html>

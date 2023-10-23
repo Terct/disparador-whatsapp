@@ -1,12 +1,1 @@
-[
-    {
-        "name": "boleto",
-        "text": 1,
-        "params": ""
-    },
-    {
-        "name": "Compra",
-        "text": 1,
-        "params": ""
-    }
-]
+[{"name":"boletoo","text":"2","params":"bolet"},{"name":"teste","text":"2","params":"3sdwd"}]

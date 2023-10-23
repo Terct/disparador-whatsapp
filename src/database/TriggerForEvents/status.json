@@ -1,7 +1,8 @@
 [
   {
-    "status": "stopped",
-    "lastLine": 1,
-    "progress": "10/99"
+    "status": "activated",
+    "lastLine": 0,
+    "maxLines": 10,
+    "progress": "0"
   }
 ]

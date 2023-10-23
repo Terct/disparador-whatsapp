@@ -27,6 +27,13 @@ app.get('/TriggerForEvents', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'TriggerForEvents.html'));
 });
 
+app.get('/editTexts', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'texts.html'));
+});
+
+app.get('/configEvents', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'configEvents.html'));
+});
 
 const TriggerForListUrl = "https://n8n.dagestao.com/webhook/startorstop"
 const TriggerForEventsUrl = "https://n8n.dagestao.com/webhook/controllertriggerevents"
@@ -61,6 +68,116 @@ app.get('/search-records', (req, res) => {
     });
 });
 
+
+// Rota para editar um texto
+app.put('/edit-text/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const newText = req.body.text;
+    const texts = JSON.parse(fs.readFileSync('./src/database/texts.json'));
+
+    const updatedTexts = texts.map(text => {
+        if (text.id === id) {
+            text.text = newText;
+        }
+        return text;
+    });
+
+    fs.writeFileSync('./src/database/texts.json', JSON.stringify(updatedTexts));
+    res.send('Texto editado com sucesso');
+});
+
+// Rota para deletar um texto
+app.delete('/delete-text/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const texts = JSON.parse(fs.readFileSync('./src/database/texts.json'));
+
+    const filteredTexts = texts.filter(text => text.id !== id);
+
+    fs.writeFileSync('./src/database/texts.json', JSON.stringify(filteredTexts));
+    res.send('Texto deletado com sucesso');
+});
+
+
+// Rota para adicionar um novo texto
+app.post('/add-text', (req, res) => {
+    const newText = req.body.text;
+    const texts = JSON.parse(fs.readFileSync('./src/database/texts.json'));
+
+    // Gerar um novo ID (último ID + 1)
+    const lastId = texts.length > 0 ? texts[texts.length - 1].id : 0;
+    const newId = lastId + 1;
+
+    // Adicionar o novo texto ao array de textos
+    texts.push({ id: newId, text: newText });
+
+    fs.writeFileSync('./src/database/texts.json', JSON.stringify(texts));
+    res.send('Texto adicionado com sucesso');
+});
+
+
+// Rota para editar um texto
+app.put('/edit-event/:params', (req, res) => {
+    const params = req.params.params; // O nome do parâmetro deve ser igual ao especificado na rota
+
+    const name = req.body.name;
+    const messageid = req.body.messageid;
+    const newparams = req.body.newparams
+
+    const events = JSON.parse(fs.readFileSync('./src/database/TriggerForEvents/events.json'));
+
+    const updatedTexts = events.map(event => {
+        if (event.params === params) {
+            event.name = name;
+            event.text = messageid;
+            event.params = newparams
+        }
+        return event;
+    });
+
+    fs.writeFileSync('./src/database/TriggerForEvents/events.json', JSON.stringify(updatedTexts));
+    res.send('Texto editado com sucesso');
+});
+
+// Rota para deletar um texto
+app.delete('/delete-event/:params', (req, res) => {
+    const params = req.params.params;
+    const events = JSON.parse(fs.readFileSync('./src/database/TriggerForEvents/events.json'));
+
+    const filteredTexts = events.filter(event => event.params !== params);
+
+    fs.writeFileSync('./src/database/TriggerForEvents/events.json', JSON.stringify(filteredTexts));
+    res.send('Texto deletado com sucesso');
+});
+
+app.post('/add-event', (req, res) => {
+    const newEventName = req.body.name;
+    const newEventMensagemId = req.body.mensagemid;
+    const newEventParams = req.body.params;
+
+    // Ler a lista atual de eventos do arquivo
+    const events = JSON.parse(fs.readFileSync('./src/database/TriggerForEvents/events.json'));
+
+    // Verificar se já existe um evento com o mesmo valor em params
+    const existingEvent = events.find(event => event.params === newEventParams);
+
+    if (existingEvent) {
+        res.send('Um evento com o mesmo parâmetro já existe.');
+    } else {
+        // Crie um novo evento
+        const newEvent = {
+            name: newEventName,
+            text: newEventMensagemId,
+            params: newEventParams,
+        };
+
+        events.push(newEvent);
+
+        // Escreva a lista atualizada de eventos de volta no arquivo
+        fs.writeFileSync('./src/database/TriggerForEvents/events.json', JSON.stringify(events));
+
+        res.send('Evento adicionado com sucesso');
+    }
+});
 
 const upload = multer(); // Remove a configuração para salvar os uploads em disco.
 
@@ -224,6 +341,7 @@ app.get('/searchStatusTriggerForEvents', (req, res) => {
 });
 
 
+
 app.get('/searchEventsTriggerForEvents', (req, res) => {
     const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForEvents', 'events.json');
 
@@ -244,6 +362,26 @@ app.get('/searchEventsTriggerForEvents', (req, res) => {
     });
 });
 
+
+app.get('/searchTextsTriggerForEvents', (req, res) => {
+    const statusFilePath = path.join(__dirname, 'src', 'database', 'texts.json');
+
+
+    fs.readFile(statusFilePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Erro ao ler o arquivo:', err);
+            res.status(500).json({ error: 'Erro ao buscar o arquivo' });
+        } else {
+            try {
+                const statusData = JSON.parse(data);
+                res.json(statusData);
+            } catch (error) {
+                console.error('Erro ao analisar o JSON:', error);
+                res.status(500).json({ error: 'Erro ao buscar o status' });
+            }
+        }
+    });
+});
 
 
 app.get('/set-status', (req, res) => {
@@ -266,6 +404,8 @@ app.get('/set-status', (req, res) => {
         res.status(400).json({ error: 'O valor "value" deve ser "started" ou "stopped".' });
     }
 });
+
+
 
 
 app.get('/setStatusTriggerForEvents', (req, res) => {
@@ -317,6 +457,107 @@ app.get('/set-line', (req, res) => {
 });
 
 
+app.get('/setLineTriggerForEvents', (req, res) => {
+    const newValue = req.query.value;
+
+    // Certifique-se de validar o novo valor aqui, se necessário.
+
+    // Converta a string em um número (inteiro neste caso).
+    const numericValue = parseInt(newValue, 10);
+
+    if (!isNaN(numericValue)) {
+        // Leia o arquivo JSON existente.
+        const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForEvents', 'status.json');
+        const existingData = require(statusFilePath);
+
+        // Atualize o valor de "lastLine" no objeto JSON com o valor numérico.
+        existingData[0].lastLine = numericValue;
+
+        // Salve o objeto JSON atualizado de volta no arquivo.
+        fs.writeFileSync(statusFilePath, JSON.stringify(existingData, null, 2));
+
+        res.json({ success: true, message: 'Linha atualizado com sucesso.' });
+    } else {
+        res.json({ success: false, message: 'O valor não é um número válido.' });
+    }
+});
+
+
+app.get('/setProgressTriggerForEvents', (req, res) => {
+    const newValue = req.query.value; // Obtém o valor do parâmetro "value" na URL.
+
+
+    // Leia o arquivo JSON existente.
+    const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForEvents', 'status.json');
+    const existingData = require(statusFilePath);
+
+    // Atualize o valor de "status" no objeto JSON.
+    existingData[0].progress = newValue;
+
+    // Salve o objeto JSON atualizado de volta no arquivo.
+    fs.writeFileSync(statusFilePath, JSON.stringify(existingData, null, 2));
+
+    res.json({ success: true, message: 'Status atualizado com sucesso.' });
+
+});
+
+
+
+app.get('/setMaxLineTriggerForEvents', (req, res) => {
+    const newValue = req.query.value;
+
+    // Certifique-se de validar o novo valor aqui, se necessário.
+
+    // Converta a string em um número (inteiro neste caso).
+    const numericValue = parseInt(newValue, 10);
+
+    if (!isNaN(numericValue)) {
+        // Leia o arquivo JSON existente.
+        const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForEvents', 'status.json');
+        const existingData = require(statusFilePath);
+
+        // Atualize o valor de "lastLine" no objeto JSON com o valor numérico.
+        existingData[0].maxLines = numericValue;
+
+        // Salve o objeto JSON atualizado de volta no arquivo.
+        fs.writeFileSync(statusFilePath, JSON.stringify(existingData, null, 2));
+
+        res.json({ success: true, message: 'Linha atualizado com sucesso.' });
+    } else {
+        res.json({ success: false, message: 'O valor não é um número válido.' });
+    }
+});
+
+
+
+app.get('/set-MaxLines', (req, res) => {
+    const newValue = req.query.value;
+
+    // Certifique-se de validar o novo valor aqui, se necessário.
+
+    // Converta a string em um número (inteiro neste caso).
+    const numericValue = parseInt(newValue, 10);
+
+    if (!isNaN(numericValue)) {
+        // Leia o arquivo JSON existente.
+        const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForList', 'status.json');
+        const existingData = require(statusFilePath);
+
+        // Atualize o valor de "lastLine" no objeto JSON com o valor numérico.
+        existingData[0].maxLines = numericValue;
+
+        // Salve o objeto JSON atualizado de volta no arquivo.
+        fs.writeFileSync(statusFilePath, JSON.stringify(existingData, null, 2));
+
+        res.json({ success: true, message: 'Linha atualizado com sucesso.' });
+    } else {
+        res.json({ success: false, message: 'O valor não é um número válido.' });
+    }
+});
+
+
+
+
 app.get('/set-progress', (req, res) => {
     const newValue = req.query.value; // Obtém o valor do parâmetro "value" na URL.
 
@@ -334,6 +575,7 @@ app.get('/set-progress', (req, res) => {
     res.json({ success: true, message: 'Status atualizado com sucesso.' });
 
 });
+
 
 app.get('/fetch-instances', async (req, res) => {
     const maxLine = req.query.maxline;
