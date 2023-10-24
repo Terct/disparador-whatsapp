@@ -274,3 +274,7 @@ iframe {
     height: 30px;
     width: 50%;
 }
+
+#SelectedMsgs{
+    height: 30px;
+}

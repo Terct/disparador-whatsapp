@@ -2,12 +2,12 @@
 <html>
 
 <head>
-    <title>Disparador por Webhooks</title>
+    <title>Lista de Contatos</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 
 <body>
-    <h1 id="titulo">Disparos por Evento</h1>
+    <h1 id="titulo">Gerenciador de Disparos</h1>
 
     <div id="Conteiner-Control-MaxLine">
 
@@ -18,14 +18,13 @@
 
     </div>
 
-
     <div id="Conteiner-Control">
         <h1 id="status"></h1>
+        <button id="restart-button">Iniciar</button>
+        <button id="stop-button">Parar</button>
+        <button id="start-button">Continuar</button>
 
-        <button id="enable-button">Ativar</button>
-        <button id="disable-button">Desativar</button>
-
-        <h2>Disparos: </h2>
+        <h2>Status do Progresso: </h2>
         <h2 id="statusProgress"></h2>
     </div>
 
@@ -35,7 +34,7 @@
             <button id="showLines">Acompanhar Linhas</button>
             <button id="showMsgs" onclick="openEditModal()">Editar Mensagens</button>
             <br>
-            <button id="EditEvents" onclick="openEditEventsModal()">Gerenciar Eventos</button>
+            <button id="showSelectMgs" onclick="openSelectMgsModal()">Configurar Mensagens</button>
             </br>
         </div>
 
@@ -48,17 +47,19 @@
     </div>
 
 
+    <h1>Importar Lista de Contatos</h1>
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".xlsx">
+        <button type="submit">Enviar Arquivo XLSX</button>
+    </form>
+
+
     <table>
-        <h1>Histótico</h1>
+        <h1>Lista de Contatos</h1>
         <thead>
             <tr>
                 <th>Nome</th>
                 <th>Número</th>
-                <th>Status</th>
-                <th>Hora</th>
-                <th>Linha</th>
-                <th>Mensagem</th>
-
             </tr>
         </thead>
         <tbody id="contact-list">
@@ -76,6 +77,8 @@
         </div>
     </div>
 
+
+
     <div id="EdiMaxLines" class="modal">
         <span class="close" id="close-edit-modal" onclick="closeEditModalMaxLines()">&times;</span>
         <div class="modal-content">
@@ -87,6 +90,7 @@
     </div>
 
 
+
     <div id="edit-messages-modal" class="modal" style="display: none;">
         <div id="modal-content-editMensagem" class="modal-content">
             <span class="close" id="close-edit-modal" onclick="closeEditModal()">&times;</span>
@@ -95,15 +99,18 @@
     </div>
 
 
-    <div id="edit-events-modal" class="modal" style="display: none;">
-        <div id="modal-content-editEvents" class="modal-content">
-            <span class="close" id="close-edit-modal" onclick="closeEditEventsModal()">&times;</span>
-            <iframe id="edit-events-iframe" src="/configEvents"></iframe>
+    <div id="SelectMsgsModal" class="modal">
+        <div class="modal-content">
+            <h2>Seleção de Mensagens</h2>
+            <span class="close" id="close-edit-modal" onclick="closeSelectMgsModal()">&times;</span>
+            <p>Digite um id para selecionar uma mensagem. Caso deseje adiconar mais de uma mensagem, use o exemplo: 1,2,3,4 com o id de cada mensagem separado por virgulas.</p>
+            <input type="text" id="SelectedMsgs" placeholder="Id da mensagem">
+            <button id="save-selectMsgs">Salvar</button>
         </div>
     </div>
 
-    <script>
 
+    <script>
 
         // Função para abrir o modal de edição
         function openEditModal() {
@@ -117,6 +124,7 @@
             modal.style.display = 'none';
         }
 
+
         // Função para abrir o modal de edição
         function openEditEventsModalMaxLines() {
             const modal = document.getElementById('EdiMaxLines');
@@ -128,64 +136,69 @@
             const modal = document.getElementById('EdiMaxLines');
             modal.style.display = 'none';
         }
-
-
+        
 
         // Função para abrir o modal de edição
-        function openEditEventsModal() {
-            const modal = document.getElementById('edit-events-modal');
+        function openSelectMgsModal() {
+            const modal = document.getElementById('SelectMsgsModal');
             modal.style.display = 'block';
         }
 
         // Função para fechar o modal de edição
-        function closeEditEventsModal() {
-            const modal = document.getElementById('edit-events-modal');
+        function closeSelectMgsModal() {
+            const modal = document.getElementById('SelectMsgsModal');
             modal.style.display = 'none';
         }
 
 
-        function SearchRecords() {
+        // Realize a requisição para obter a lista de contatos e preencher a tabela
+        fetch('/search-list')
+            .then(response => response.json())
+            .then(data => {
+                const contactList = document.getElementById('contact-list');
+                data.forEach(contact => {
+                    const row = document.createElement('tr');
+                    const nameCell = document.createElement('td');
+                    const numberCell = document.createElement('td');
+                    nameCell.textContent = contact.Nome;
+                    numberCell.textContent = contact.Numero;
+                    console.log(contact)
+                    row.appendChild(nameCell);
+                    row.appendChild(numberCell);
+                    contactList.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Erro ao buscar a lista de contatos:', error));
 
-            const contactList = document.getElementById('contact-list');
-            // Limpa a tabela removendo todos os elementos filhos
-            contactList.innerHTML = '';
-            // Realize a requisição para obter a lista de contatos e preencher a tabela
-            fetch('/search-records')
-                .then(response => response.json())
-                .then(data => {
-                    const contactList = document.getElementById('contact-list');
-                    data.forEach(contact => {
-                        const row = document.createElement('tr');
-                        const nameCell = document.createElement('td');
-                        const numberCell = document.createElement('td');
-                        const statusCell = document.createElement('td');
-                        const hourCell = document.createElement('td');
-                        const lineCell = document.createElement('td');
-                        const msgCell = document.createElement('td');
 
-                        nameCell.textContent = contact.Nome;
-                        numberCell.textContent = contact.Numero;
-                        statusCell.textContent = contact.Status;
-                        hourCell.textContent = contact.Hora;
-                        lineCell.textContent = contact.Linha;
-                        msgCell.textContent = contact.msg;
 
-                        row.appendChild(nameCell);
-                        row.appendChild(numberCell);
-                        row.appendChild(statusCell);
-                        row.appendChild(hourCell);
-                        row.appendChild(lineCell);
-                        row.appendChild(msgCell);
-                        contactList.appendChild(row);
-                    });
-                })
-                .catch(error => console.error('Erro ao buscar a lista de contatos:', error));
+        const uploadForm = document.getElementById('upload-form');
 
-        }
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(uploadForm);
 
-        document.getElementById('enable-button').addEventListener('click', () => {
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    // Recarregue a página ou forneça algum feedback de sucesso após o upload.
+                    location.reload();
+                } else {
+                    console.error('Erro ao fazer upload do arquivo XLSX.');
+                }
+            } catch (error) {
+                console.error('Erro ao fazer upload do arquivo XLSX:', error);
+            }
+        });
+
+
+        document.getElementById('start-button').addEventListener('click', () => {
             // Faça uma requisição para a rota "/start" aqui
-            fetch('/enableTriggerForEvents')
+            fetch('/start')
                 .then(response => {
                     if (response.ok) {
                         console.log('Ação de Iniciar realizada com sucesso.');
@@ -196,9 +209,22 @@
                 .catch(error => console.error('Erro ao realizar ação de Iniciar:', error));
         });
 
-        document.getElementById('disable-button').addEventListener('click', () => {
+        document.getElementById('stop-button').addEventListener('click', () => {
             // Faça uma requisição para a rota "/stop" aqui
-            fetch('/disableTriggerForEvents')
+            fetch('/stop')
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Ação de Parar realizada com sucesso.');
+                    } else {
+                        console.error('Erro ao realizar ação de Parar.');
+                    }
+                })
+                .catch(error => console.error('Erro ao realizar ação de Parar:', error));
+        });
+
+        document.getElementById('restart-button').addEventListener('click', () => {
+            // Faça uma requisição para a rota "/stop" aqui
+            fetch('/restart')
                 .then(response => {
                     if (response.ok) {
                         console.log('Ação de Parar realizada com sucesso.');
@@ -210,19 +236,20 @@
         });
 
 
+
         const statusElementProgress = document.getElementById('statusProgress');
         const statusElement = document.getElementById('status');
         const statusMaxLines = document.getElementById('MaxLinesH2');
 
         function getStatus() {
-            fetch('/searchStatusTriggerForEvents') // Substitua '/getStatus' pela rota correta
+            fetch('/search-status') // Substitua '/getStatus' pela rota correta
                 .then(response => response.json())
                 .then(data => {
                     //console.log(data[0])
                     statusElementProgress.textContent = `${data[0].progress}`;
                     statusElement.textContent = `Situação: ${data[0].status}`;
                     statusMaxLines.textContent = `${data[0].maxLines}`;
-                    
+
                 })
                 .catch(error => {
                     console.error('Erro ao buscar o status do progresso:', error);
@@ -285,6 +312,7 @@
 
             document.getElementById("ultAtulizacao").textContent = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
+
         }
 
         // Função para exibir o modal de login
@@ -321,24 +349,6 @@
         }
 
 
-        // Função para fazer login e chamar getLinesAndCreateTable
-        function SetMaxLines(valueC) {
-
-            const fetchUrl = `/setMaxLineTriggerForEvents?value=${valueC}`;
-            fetch(fetchUrl)
-                .then(response => response.json())
-                .then(data => {
-                    // Chame a função para criar a tabela das linhas com os dados obtidos
-                    alert('Quantidade Maxima de linhas Alterada com sucesso!')
-                })
-                .catch(error => {
-                    console.error('Erro ao alterar', error);
-                });
-
-        }
-
-
-
         document.getElementById('loginButton').addEventListener('click', () => {
             url = document.getElementById('urlInput').value;
             apiKey = document.getElementById('apiKeyInput').value;
@@ -360,7 +370,49 @@
             }
         });
 
+        // Função para fazer login e chamar getLinesAndCreateTable
+        function SetMaxLines(valueC) {
 
+            const fetchUrl = `/set-MaxLines?value=${valueC}`;
+            fetch(fetchUrl)
+                .then(response => response.json())
+                .then(data => {
+                    // Chame a função para criar a tabela das linhas com os dados obtidos
+                    alert('Quantidade Maxima de linhas Alterada com sucesso!')
+                })
+                .catch(error => {
+                    console.error('Erro ao alterar', error);
+                });
+
+        }
+
+        function atualizarMsgsSelected(inputValue) {
+
+            if (inputValue) {
+                // Verifique se a entrada é válida
+                const values = inputValue.split(',').map(Number);
+
+                if (values.some(isNaN)) {
+                    alert("Valores inválidos. Certifique-se de que todos os valores sejam números inteiros separados por vírgula.");
+                } else {
+                    // Os valores são válidos, então envie a requisição para o servidor
+                    fetch('/atualizar-Selected-Tesxts', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ data: inputValue }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message);
+                    })
+                    .catch(error => {
+                        alert("Erro ao atualizar o JSON. Verifique o servidor.");
+                    });
+                }
+            }
+        }
 
 
 
@@ -382,13 +434,32 @@
             }
         });
 
-        SearchRecords()
+        
+
+
+        document.getElementById('save-selectMsgs').addEventListener('click', () => {
+            SelectedMsg = document.getElementById('SelectedMsgs').value;
+
+            // Verifique se os campos foram preenchidos
+            if (SelectedMsg) {
+                // Chame a função de login e busca de linhas imediatamente
+                atualizarMsgsSelected(SelectedMsg);
+
+                // Feche o modal após o login
+                const loginModal = document.getElementById('SelectMsgsModal');
+                loginModal.style.display = 'none';
+
+
+            } else {
+                alert('Preencha todos os campos para fazer o login.');
+            }
+        });
+
+
         getStatus();
         //getStatusLines()
 
         // Atualize o status a cada 5 segundos (você pode ajustar o intervalo conforme necessário)
-        
-        setInterval(SearchRecords, 30000);
         setInterval(getStatus, 5000);
         //setInterval(getStatusLines, 60000);
     </script>

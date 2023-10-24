@@ -23,8 +23,8 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/TriggerForEvents', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'TriggerForEvents.html'));
+app.get('/TriggerForList', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'TriggerForList.html'));
 });
 
 app.get('/editTexts', (req, res) => {
@@ -319,6 +319,27 @@ app.get('/search-status', (req, res) => {
     });
 });
 
+app.post('/atualizar-Selected-Tesxts', (req, res) => {
+    const { data } = req.body;
+
+    if (data) {
+      const numbers = data.split(',').map(Number);
+  
+      try {
+        const jsonFile = './src/database/TriggerForList/selectedTexts.json';
+        const jsonData = numbers.map(id => ({ id })); // Crie um novo array com os novos valores
+  
+        fs.writeFileSync(jsonFile, JSON.stringify(jsonData, null, 2));
+        
+        res.json({ message: 'Seleção de mensgens atualizado com sucesso!' });
+      } catch (error) {
+        res.status(500).json({ error: 'Erro ao atualizar a seleção' });
+      }
+    } else {
+      res.status(400).json({ error: 'Dados inválidos' });
+    }
+  });
+  
 
 app.get('/searchStatusTriggerForEvents', (req, res) => {
     const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForEvents', 'status.json');

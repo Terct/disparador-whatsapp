@@ -2,12 +2,12 @@
 <html>
 
 <head>
-    <title>Lista de Contatos</title>
+    <title>Disparador por Webhooks</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 
 <body>
-    <h1 id="titulo">Gerenciador de Disparos</h1>
+    <h1 id="titulo">Disparos por Evento</h1>
 
     <div id="Conteiner-Control-MaxLine">
 
@@ -18,13 +18,14 @@
 
     </div>
 
+
     <div id="Conteiner-Control">
         <h1 id="status"></h1>
-        <button id="restart-button">Iniciar</button>
-        <button id="stop-button">Parar</button>
-        <button id="start-button">Continuar</button>
 
-        <h2>Status do Progresso: </h2>
+        <button id="enable-button">Ativar</button>
+        <button id="disable-button">Desativar</button>
+
+        <h2>Disparos: </h2>
         <h2 id="statusProgress"></h2>
     </div>
 
@@ -33,6 +34,9 @@
         <div id="showbotoes">
             <button id="showLines">Acompanhar Linhas</button>
             <button id="showMsgs" onclick="openEditModal()">Editar Mensagens</button>
+            <br>
+            <button id="EditEvents" onclick="openEditEventsModal()">Gerenciar Eventos</button>
+            </br>
         </div>
 
         <div id="Conteiner-Settings" style="display: none;">
@@ -44,18 +48,17 @@
     </div>
 
 
-    <form id="upload-form" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".xlsx">
-        <button type="submit">Enviar Arquivo XLSX</button>
-    </form>
-
-
     <table>
-        <h1>Lista de Contatos</h1>
+        <h1>Histótico</h1>
         <thead>
             <tr>
                 <th>Nome</th>
                 <th>Número</th>
+                <th>Status</th>
+                <th>Hora</th>
+                <th>Linha</th>
+                <th>Mensagem</th>
+
             </tr>
         </thead>
         <tbody id="contact-list">
@@ -73,8 +76,6 @@
         </div>
     </div>
 
-
-
     <div id="EdiMaxLines" class="modal">
         <span class="close" id="close-edit-modal" onclick="closeEditModalMaxLines()">&times;</span>
         <div class="modal-content">
@@ -86,7 +87,6 @@
     </div>
 
 
-
     <div id="edit-messages-modal" class="modal" style="display: none;">
         <div id="modal-content-editMensagem" class="modal-content">
             <span class="close" id="close-edit-modal" onclick="closeEditModal()">&times;</span>
@@ -94,7 +94,16 @@
         </div>
     </div>
 
+
+    <div id="edit-events-modal" class="modal" style="display: none;">
+        <div id="modal-content-editEvents" class="modal-content">
+            <span class="close" id="close-edit-modal" onclick="closeEditEventsModal()">&times;</span>
+            <iframe id="edit-events-iframe" src="/configEvents"></iframe>
+        </div>
+    </div>
+
     <script>
+
 
         // Função para abrir o modal de edição
         function openEditModal() {
@@ -107,7 +116,6 @@
             const modal = document.getElementById('edit-messages-modal');
             modal.style.display = 'none';
         }
-
 
         // Função para abrir o modal de edição
         function openEditEventsModalMaxLines() {
@@ -123,54 +131,69 @@
 
 
 
-        // Realize a requisição para obter a lista de contatos e preencher a tabela
-        fetch('/search-list')
-            .then(response => response.json())
-            .then(data => {
-                const contactList = document.getElementById('contact-list');
+        // Função para abrir o modal de edição
+        function openEditEventsModal() {
+            const modal = document.getElementById('edit-events-modal');
+            modal.style.display = 'block';
+        }
+
+        // Função para fechar o modal de edição
+        function closeEditEventsModal() {
+            const modal = document.getElementById('edit-events-modal');
+            modal.style.display = 'none';
+        }
+
+
+        let itemCount = 0;
+
+        function SearchRecords() {
+
+            const contactList = document.getElementById('contact-list');
+    fetch('/search-records')
+        .then(response => response.json())
+        .then(data => {
+            // Verifique se a resposta tem mais itens do que os itens rastreados globalmente
+            if (data.length > itemCount) {
+                // Atualize a variável global
+                itemCount = data.length;
+
+                // Limpa a tabela
+                contactList.innerHTML = '';
+
                 data.forEach(contact => {
                     const row = document.createElement('tr');
                     const nameCell = document.createElement('td');
                     const numberCell = document.createElement('td');
+                    const statusCell = document.createElement('td');
+                    const hourCell = document.createElement('td');
+                    const lineCell = document.createElement('td');
+                    const msgCell = document.createElement('td');
+
                     nameCell.textContent = contact.Nome;
                     numberCell.textContent = contact.Numero;
-                    console.log(contact)
+                    statusCell.textContent = contact.Status;
+                    hourCell.textContent = contact.Hora;
+                    lineCell.textContent = contact.Linha;
+                    msgCell.textContent = contact.msg;
+
                     row.appendChild(nameCell);
                     row.appendChild(numberCell);
+                    row.appendChild(statusCell);
+                    row.appendChild(hourCell);
+                    row.appendChild(lineCell);
+                    row.appendChild(msgCell);
                     contactList.appendChild(row);
                 });
-            })
-            .catch(error => console.error('Erro ao buscar a lista de contatos:', error));
-
-
-
-        const uploadForm = document.getElementById('upload-form');
-
-        uploadForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(uploadForm);
-
-            try {
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (response.ok) {
-                    // Recarregue a página ou forneça algum feedback de sucesso após o upload.
-                    location.reload();
-                } else {
-                    console.error('Erro ao fazer upload do arquivo XLSX.');
-                }
-            } catch (error) {
-                console.error('Erro ao fazer upload do arquivo XLSX:', error);
             }
-        });
+        })
+        .catch(error => console.error('Erro ao buscar a lista de contatos:', error));
+}
 
+        
 
-        document.getElementById('start-button').addEventListener('click', () => {
+        document.getElementById('enable-button').addEventListener('click', () => {
             // Faça uma requisição para a rota "/start" aqui
-            fetch('/start')
+            fetch('/enableTriggerForEvents')
                 .then(response => {
                     if (response.ok) {
                         console.log('Ação de Iniciar realizada com sucesso.');
@@ -181,9 +204,9 @@
                 .catch(error => console.error('Erro ao realizar ação de Iniciar:', error));
         });
 
-        document.getElementById('stop-button').addEventListener('click', () => {
+        document.getElementById('disable-button').addEventListener('click', () => {
             // Faça uma requisição para a rota "/stop" aqui
-            fetch('/stop')
+            fetch('/disableTriggerForEvents')
                 .then(response => {
                     if (response.ok) {
                         console.log('Ação de Parar realizada com sucesso.');
@@ -193,20 +216,6 @@
                 })
                 .catch(error => console.error('Erro ao realizar ação de Parar:', error));
         });
-
-        document.getElementById('restart-button').addEventListener('click', () => {
-            // Faça uma requisição para a rota "/stop" aqui
-            fetch('/restart')
-                .then(response => {
-                    if (response.ok) {
-                        console.log('Ação de Parar realizada com sucesso.');
-                    } else {
-                        console.error('Erro ao realizar ação de Parar.');
-                    }
-                })
-                .catch(error => console.error('Erro ao realizar ação de Parar:', error));
-        });
-
 
 
         const statusElementProgress = document.getElementById('statusProgress');
@@ -214,14 +223,14 @@
         const statusMaxLines = document.getElementById('MaxLinesH2');
 
         function getStatus() {
-            fetch('/search-status') // Substitua '/getStatus' pela rota correta
+            fetch('/searchStatusTriggerForEvents') // Substitua '/getStatus' pela rota correta
                 .then(response => response.json())
                 .then(data => {
                     //console.log(data[0])
                     statusElementProgress.textContent = `${data[0].progress}`;
                     statusElement.textContent = `Situação: ${data[0].status}`;
                     statusMaxLines.textContent = `${data[0].maxLines}`;
-
+                    
                 })
                 .catch(error => {
                     console.error('Erro ao buscar o status do progresso:', error);
@@ -284,7 +293,6 @@
 
             document.getElementById("ultAtulizacao").textContent = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
-
         }
 
         // Função para exibir o modal de login
@@ -321,6 +329,24 @@
         }
 
 
+        // Função para fazer login e chamar getLinesAndCreateTable
+        function SetMaxLines(valueC) {
+
+            const fetchUrl = `/setMaxLineTriggerForEvents?value=${valueC}`;
+            fetch(fetchUrl)
+                .then(response => response.json())
+                .then(data => {
+                    // Chame a função para criar a tabela das linhas com os dados obtidos
+                    alert('Quantidade Maxima de linhas Alterada com sucesso!')
+                })
+                .catch(error => {
+                    console.error('Erro ao alterar', error);
+                });
+
+        }
+
+
+
         document.getElementById('loginButton').addEventListener('click', () => {
             url = document.getElementById('urlInput').value;
             apiKey = document.getElementById('apiKeyInput').value;
@@ -342,21 +368,7 @@
             }
         });
 
-        // Função para fazer login e chamar getLinesAndCreateTable
-        function SetMaxLines(valueC) {
 
-            const fetchUrl = `/set-MaxLines?value=${valueC}`;
-            fetch(fetchUrl)
-                .then(response => response.json())
-                .then(data => {
-                    // Chame a função para criar a tabela das linhas com os dados obtidos
-                    alert('Quantidade Maxima de linhas Alterada com sucesso!')
-                })
-                .catch(error => {
-                    console.error('Erro ao alterar', error);
-                });
-
-        }
 
 
 
@@ -378,11 +390,13 @@
             }
         });
 
-
+        SearchRecords()
         getStatus();
         //getStatusLines()
 
         // Atualize o status a cada 5 segundos (você pode ajustar o intervalo conforme necessário)
+        
+        setInterval(SearchRecords, 30000);
         setInterval(getStatus, 5000);
         //setInterval(getStatusLines, 60000);
     </script>
