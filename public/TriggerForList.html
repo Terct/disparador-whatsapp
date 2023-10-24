@@ -7,6 +7,15 @@
 </head>
 
 <body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/TriggerForList">Disparo por Lista</a></li>
+            </ul>
+        </nav>
+    </header>
+
     <h1 id="titulo">Gerenciador de Disparos</h1>
 
     <div id="Conteiner-Control-MaxLine">
@@ -35,6 +44,7 @@
             <button id="showMsgs" onclick="openEditModal()">Editar Mensagens</button>
             <br>
             <button id="showSelectMgs" onclick="openSelectMgsModal()">Configurar Mensagens</button>
+            <button id="set-typebot" onclick="openSetTypebotModal()">Adicionar Typebot</button>
             </br>
         </div>
 
@@ -103,9 +113,23 @@
         <div class="modal-content">
             <h2>Seleção de Mensagens</h2>
             <span class="close" id="close-edit-modal" onclick="closeSelectMgsModal()">&times;</span>
-            <p>Digite um id para selecionar uma mensagem. Caso deseje adiconar mais de uma mensagem, use o exemplo: 1,2,3,4 com o id de cada mensagem separado por virgulas.</p>
+            <p>Digite um id para selecionar uma mensagem. Caso deseje adiconar mais de uma mensagem, use o exemplo:
+                1,2,3,4 com o id de cada mensagem separado por virgulas.</p>
             <input type="text" id="SelectedMsgs" placeholder="Id da mensagem">
             <button id="save-selectMsgs">Salvar</button>
+        </div>
+    </div>
+
+
+    <div id="set-typebot-modal" class="modal" style="display: none;">
+        <div id="modal-content-set-typebot" class="modal-content">
+            <h2>Adicionar Typebot</h2>
+            <span class="close" id="close-edit-modal" onclick="closeSetTypebotModal()">&times;</span>
+            <p>OBS: Esse chatbot irá ser adicionado em todas suas linhas, referente ao máximo de linhas configurado</p>
+            <input type="text" id="value-url" placeholder="Url do seu chatbot">
+
+            <button id="save-typebot">Salvar</button>
+
         </div>
     </div>
 
@@ -136,7 +160,7 @@
             const modal = document.getElementById('EdiMaxLines');
             modal.style.display = 'none';
         }
-        
+
 
         // Função para abrir o modal de edição
         function openSelectMgsModal() {
@@ -149,6 +173,21 @@
             const modal = document.getElementById('SelectMsgsModal');
             modal.style.display = 'none';
         }
+
+
+        // Função para abrir o modal de edição
+        function openSetTypebotModal() {
+            const modal = document.getElementById('set-typebot-modal');
+            modal.style.display = 'block';
+        }
+
+        // Função para fechar o modal de edição
+        function closeSetTypebotModal() {
+            const modal = document.getElementById('set-typebot-modal');
+            modal.style.display = 'none';
+        }
+
+
 
 
         // Realize a requisição para obter a lista de contatos e preencher a tabela
@@ -354,6 +393,11 @@
             apiKey = document.getElementById('apiKeyInput').value;
             maxLine = document.getElementById('maxLineInput').value;
 
+
+            localStorage.setItem('url', url);
+            localStorage.setItem('apiKey', apiKey);
+            localStorage.setItem('maxLine', maxLine);
+
             // Verifique se os campos foram preenchidos
             if (url && apiKey && maxLine) {
                 // Chame a função de login e busca de linhas imediatamente
@@ -369,6 +413,7 @@
                 alert('Preencha todos os campos para fazer o login.');
             }
         });
+
 
         // Função para fazer login e chamar getLinesAndCreateTable
         function SetMaxLines(valueC) {
@@ -403,13 +448,13 @@
                         },
                         body: JSON.stringify({ data: inputValue }),
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert(data.message);
-                    })
-                    .catch(error => {
-                        alert("Erro ao atualizar o JSON. Verifique o servidor.");
-                    });
+                        .then(response => response.json())
+                        .then(data => {
+                            alert(data.message);
+                        })
+                        .catch(error => {
+                            alert("Erro ao atualizar o JSON. Verifique o servidor.");
+                        });
                 }
             }
         }
@@ -434,7 +479,7 @@
             }
         });
 
-        
+
 
 
         document.getElementById('save-selectMsgs').addEventListener('click', () => {
@@ -456,9 +501,65 @@
         });
 
 
+        function VerificarDados() {
+            if (localStorage.getItem('url') && localStorage.getItem('apiKey') && localStorage.getItem('maxLine')) {
+                // Se estiverem salvos, definir as variáveis com os valores do Local Storage
+                url = localStorage.getItem('url');
+                apiKey = localStorage.getItem('apiKey');
+                maxLine = localStorage.getItem('maxLine');
+
+
+                document.getElementById('urlInput').value = url;
+                document.getElementById('apiKeyInput').value = apiKey;
+                document.getElementById('maxLineInput').value = maxLine;
+
+                const loginButton = document.getElementById('loginButton');
+                loginButton.click();
+
+            } else {
+                // Se não estiverem salvos, definir as variáveis como vazias
+                url = '';
+                apiKey = '';
+                maxLine = '';
+            }
+
+        }
+
+        document.getElementById('save-typebot').addEventListener('click', () => {
+            const urlbot = document.getElementById('value-url').value;
+            url = localStorage.getItem('url');
+            apiKey = localStorage.getItem('apiKey');
+            maxLine = localStorage.getItem('maxLine');
+
+            if (!url || !apiKey || !maxLine || !urlbot) {
+                alert('Faça login em "acompanhar linhas" antes de continuar.');
+                return;
+            }
+
+            // Agora, você pode fazer a requisição para a rota com os valores definidos
+            const setTypebotURL = `/set-typebot?maxlines=${maxLine}&url=${url}&apikey=${apiKey}&urlbot=${urlbot}`;
+
+            fetch(setTypebotURL)
+                .then(response => {
+                    if (response.status === 200) {
+                        alert('Alteração bem-sucedida.');
+                    } else if (response.status === 500) {
+                        alert('Erro na configurar o bot');
+                    } else {
+                        alert('Erro desconhecido');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro na requisição:', error);
+                    alert('Erro na requisição. Verifique a conexão ou outros detalhes.');
+                });
+        });
+
+
+
         getStatus();
         //getStatusLines()
-
+        VerificarDados()
         // Atualize o status a cada 5 segundos (você pode ajustar o intervalo conforme necessário)
         setInterval(getStatus, 5000);
         //setInterval(getStatusLines, 60000);

@@ -7,6 +7,14 @@
 </head>
 
 <body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/TriggerForList">Disparo por Lista</a></li>
+            </ul>
+        </nav>
+    </header>
     <h1 id="titulo">Disparos por Evento</h1>
 
     <div id="Conteiner-Control-MaxLine">
@@ -36,6 +44,7 @@
             <button id="showMsgs" onclick="openEditModal()">Editar Mensagens</button>
             <br>
             <button id="EditEvents" onclick="openEditEventsModal()">Gerenciar Eventos</button>
+            <button id="set-typebot" onclick="openSetTypebotModal()">Adicionar Typebot</button>
             </br>
         </div>
 
@@ -102,6 +111,19 @@
         </div>
     </div>
 
+
+    <div id="set-typebot-modal" class="modal" style="display: none;">
+        <div id="modal-content-set-typebot" class="modal-content">
+            <h2>Adicionar Typebot</h2>
+            <span class="close" id="close-edit-modal" onclick="closeSetTypebotModal()">&times;</span>
+            <p>OBS: Esse chatbot irá ser adicionado em todas suas linhas, referente ao máximo de linhas configurado</p>
+            <input type="text" id="value-url" placeholder="Url do seu chatbot">
+
+            <button id="save-typebot">Salvar</button>
+
+        </div>
+    </div>
+
     <script>
 
 
@@ -144,52 +166,67 @@
         }
 
 
+
+        // Função para abrir o modal de edição
+        function openSetTypebotModal() {
+            const modal = document.getElementById('set-typebot-modal');
+            modal.style.display = 'block';
+        }
+
+        // Função para fechar o modal de edição
+        function closeSetTypebotModal() {
+            const modal = document.getElementById('set-typebot-modal');
+            modal.style.display = 'none';
+        }
+
+
+
         let itemCount = 0;
 
         function SearchRecords() {
 
             const contactList = document.getElementById('contact-list');
-    fetch('/search-records')
-        .then(response => response.json())
-        .then(data => {
-            // Verifique se a resposta tem mais itens do que os itens rastreados globalmente
-            if (data.length > itemCount) {
-                // Atualize a variável global
-                itemCount = data.length;
+            fetch('/search-records')
+                .then(response => response.json())
+                .then(data => {
+                    // Verifique se a resposta tem mais itens do que os itens rastreados globalmente
+                    if (data.length > itemCount) {
+                        // Atualize a variável global
+                        itemCount = data.length;
 
-                // Limpa a tabela
-                contactList.innerHTML = '';
+                        // Limpa a tabela
+                        contactList.innerHTML = '';
 
-                data.forEach(contact => {
-                    const row = document.createElement('tr');
-                    const nameCell = document.createElement('td');
-                    const numberCell = document.createElement('td');
-                    const statusCell = document.createElement('td');
-                    const hourCell = document.createElement('td');
-                    const lineCell = document.createElement('td');
-                    const msgCell = document.createElement('td');
+                        data.forEach(contact => {
+                            const row = document.createElement('tr');
+                            const nameCell = document.createElement('td');
+                            const numberCell = document.createElement('td');
+                            const statusCell = document.createElement('td');
+                            const hourCell = document.createElement('td');
+                            const lineCell = document.createElement('td');
+                            const msgCell = document.createElement('td');
 
-                    nameCell.textContent = contact.Nome;
-                    numberCell.textContent = contact.Numero;
-                    statusCell.textContent = contact.Status;
-                    hourCell.textContent = contact.Hora;
-                    lineCell.textContent = contact.Linha;
-                    msgCell.textContent = contact.msg;
+                            nameCell.textContent = contact.Nome;
+                            numberCell.textContent = contact.Numero;
+                            statusCell.textContent = contact.Status;
+                            hourCell.textContent = contact.Hora;
+                            lineCell.textContent = contact.Linha;
+                            msgCell.textContent = contact.msg;
 
-                    row.appendChild(nameCell);
-                    row.appendChild(numberCell);
-                    row.appendChild(statusCell);
-                    row.appendChild(hourCell);
-                    row.appendChild(lineCell);
-                    row.appendChild(msgCell);
-                    contactList.appendChild(row);
-                });
-            }
-        })
-        .catch(error => console.error('Erro ao buscar a lista de contatos:', error));
-}
+                            row.appendChild(nameCell);
+                            row.appendChild(numberCell);
+                            row.appendChild(statusCell);
+                            row.appendChild(hourCell);
+                            row.appendChild(lineCell);
+                            row.appendChild(msgCell);
+                            contactList.appendChild(row);
+                        });
+                    }
+                })
+                .catch(error => console.error('Erro ao buscar a lista de contatos:', error));
+        }
 
-        
+
 
         document.getElementById('enable-button').addEventListener('click', () => {
             // Faça uma requisição para a rota "/start" aqui
@@ -197,8 +234,10 @@
                 .then(response => {
                     if (response.ok) {
                         console.log('Ação de Iniciar realizada com sucesso.');
+
                     } else {
                         console.error('Erro ao realizar ação de Iniciar.');
+                        alert("Erro ao iniciar, revise suas configurações")
                     }
                 })
                 .catch(error => console.error('Erro ao realizar ação de Iniciar:', error));
@@ -230,7 +269,7 @@
                     statusElementProgress.textContent = `${data[0].progress}`;
                     statusElement.textContent = `Situação: ${data[0].status}`;
                     statusMaxLines.textContent = `${data[0].maxLines}`;
-                    
+
                 })
                 .catch(error => {
                     console.error('Erro ao buscar o status do progresso:', error);
@@ -352,6 +391,11 @@
             apiKey = document.getElementById('apiKeyInput').value;
             maxLine = document.getElementById('maxLineInput').value;
 
+
+            localStorage.setItem('url', url);
+            localStorage.setItem('apiKey', apiKey);
+            localStorage.setItem('maxLine', maxLine);
+
             // Verifique se os campos foram preenchidos
             if (url && apiKey && maxLine) {
                 // Chame a função de login e busca de linhas imediatamente
@@ -367,6 +411,31 @@
                 alert('Preencha todos os campos para fazer o login.');
             }
         });
+
+
+        function VerificarDados() {
+            if (localStorage.getItem('url') && localStorage.getItem('apiKey') && localStorage.getItem('maxLine')) {
+                // Se estiverem salvos, definir as variáveis com os valores do Local Storage
+                url = localStorage.getItem('url');
+                apiKey = localStorage.getItem('apiKey');
+                maxLine = localStorage.getItem('maxLine');
+
+
+                document.getElementById('urlInput').value = url;
+                document.getElementById('apiKeyInput').value = apiKey;
+                document.getElementById('maxLineInput').value = maxLine;
+
+                const loginButton = document.getElementById('loginButton');
+                loginButton.click();
+
+            } else {
+                // Se não estiverem salvos, definir as variáveis como vazias
+                url = '';
+                apiKey = '';
+                maxLine = '';
+            }
+
+        }
 
 
 
@@ -390,12 +459,45 @@
             }
         });
 
+        document.getElementById('save-typebot').addEventListener('click', () => {
+            const urlbot = document.getElementById('value-url').value;
+            url = localStorage.getItem('url');
+            apiKey = localStorage.getItem('apiKey');
+            maxLine = localStorage.getItem('maxLine');
+
+            if (!url || !apiKey || !maxLine || !urlbot) {
+                alert('Faça login em "acompanhar linhas" antes de continuar.');
+                return;
+            }
+
+            // Agora, você pode fazer a requisição para a rota com os valores definidos
+            const setTypebotURL = `/set-typebot?maxlines=${maxLine}&url=${url}&apikey=${apiKey}&urlbot=${urlbot}`;
+
+            fetch(setTypebotURL)
+                .then(response => {
+                    if (response.status === 200) {
+                        alert('Alteração bem-sucedida.');
+                    } else if (response.status === 500) {
+                        alert('Erro na configurar o bot');
+                    } else {
+                        alert('Erro desconhecido');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro na requisição:', error);
+                    alert('Erro na requisição. Verifique a conexão ou outros detalhes.');
+                });
+        });
+
+
+
         SearchRecords()
         getStatus();
+        VerificarDados()
         //getStatusLines()
 
         // Atualize o status a cada 5 segundos (você pode ajustar o intervalo conforme necessário)
-        
+
         setInterval(SearchRecords, 30000);
         setInterval(getStatus, 5000);
         //setInterval(getStatusLines, 60000);

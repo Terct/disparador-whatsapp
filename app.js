@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const multer = require('multer');
 const xlsx = require('xlsx');
 const { url } = require('inspector');
+const { createConnection } = require('net');
 
 
 const app = express();
@@ -123,19 +124,33 @@ app.put('/edit-event/:params', (req, res) => {
     const messageid = req.body.messageid;
     const newparams = req.body.newparams
 
-    const events = JSON.parse(fs.readFileSync('./src/database/TriggerForEvents/events.json'));
 
-    const updatedTexts = events.map(event => {
-        if (event.params === params) {
-            event.name = name;
-            event.text = messageid;
-            event.params = newparams
-        }
-        return event;
-    });
+    // Ler as mensagens do arquivo texts.json
+    const texts = JSON.parse(fs.readFileSync('./src/database/texts.json'));
 
-    fs.writeFileSync('./src/database/TriggerForEvents/events.json', JSON.stringify(updatedTexts));
-    res.send('Texto editado com sucesso');
+    const messageExists = texts.some(message => message.id == messageid);
+
+    if (messageExists) {
+        // Crie um novo evento
+
+        const events = JSON.parse(fs.readFileSync('./src/database/TriggerForEvents/events.json'));
+
+        const updatedTexts = events.map(event => {
+            if (event.params === params) {
+                event.name = name;
+                event.text = messageid;
+                event.params = newparams
+            }
+            return event;
+        });
+
+        fs.writeFileSync('./src/database/TriggerForEvents/events.json', JSON.stringify(updatedTexts));
+        res.send('Texto editado com sucesso');
+
+    } else {
+        res.send('O ID de mensagem não existe.');
+    }
+
 });
 
 // Rota para deletar um texto
@@ -146,7 +161,7 @@ app.delete('/delete-event/:params', (req, res) => {
     const filteredTexts = events.filter(event => event.params !== params);
 
     fs.writeFileSync('./src/database/TriggerForEvents/events.json', JSON.stringify(filteredTexts));
-    res.send('Texto deletado com sucesso');
+    res.send('Evento  deletado com sucesso');
 });
 
 app.post('/add-event', (req, res) => {
@@ -157,27 +172,38 @@ app.post('/add-event', (req, res) => {
     // Ler a lista atual de eventos do arquivo
     const events = JSON.parse(fs.readFileSync('./src/database/TriggerForEvents/events.json'));
 
+    // Ler as mensagens do arquivo texts.json
+    const texts = JSON.parse(fs.readFileSync('./src/database/texts.json'));
+
     // Verificar se já existe um evento com o mesmo valor em params
     const existingEvent = events.find(event => event.params === newEventParams);
 
     if (existingEvent) {
         res.send('Um evento com o mesmo parâmetro já existe.');
     } else {
-        // Crie um novo evento
-        const newEvent = {
-            name: newEventName,
-            text: newEventMensagemId,
-            params: newEventParams,
-        };
+        // Verificar se o newEventMensagemId existe nas mensagens
+        const messageExists = texts.some(message => message.id == newEventMensagemId);
 
-        events.push(newEvent);
+        if (messageExists) {
+            // Crie um novo evento
+            const newEvent = {
+                name: newEventName,
+                text: newEventMensagemId,
+                params: newEventParams,
+            };
 
-        // Escreva a lista atualizada de eventos de volta no arquivo
-        fs.writeFileSync('./src/database/TriggerForEvents/events.json', JSON.stringify(events));
+            events.push(newEvent);
 
-        res.send('Evento adicionado com sucesso');
+            // Escreva a lista atualizada de eventos de volta no arquivo
+            fs.writeFileSync('./src/database/TriggerForEvents/events.json', JSON.stringify(events));
+
+            res.send('Evento adicionado com sucesso');
+        } else {
+            res.send('O ID de mensagem não existe.');
+        }
     }
 });
+
 
 const upload = multer(); // Remove a configuração para salvar os uploads em disco.
 
@@ -212,7 +238,7 @@ app.get('/start', (req, res) => {
     const params = { type: 'start' };
 
     // Faz uma requisição GET para o serviço externo
-    axios.get(TriggerForListUrl , { params })
+    axios.get(TriggerForListUrl, { params })
         .then(response => {
             // Se a ação for bem-sucedida, você pode enviar uma resposta 200 (OK).
             res.sendStatus(200);
@@ -230,7 +256,7 @@ app.get('/restart', (req, res) => {
     const params = { type: 'restart' };
 
     // Faz uma requisição GET para o serviço externo
-    axios.get(TriggerForListUrl , { params })
+    axios.get(TriggerForListUrl, { params })
         .then(response => {
             // Se a ação for bem-sucedida, você pode enviar uma resposta 200 (OK).
             res.sendStatus(200);
@@ -249,7 +275,7 @@ app.get('/stop', (req, res) => {
     const params = { type: 'stop' };
 
     // Faz uma requisição GET para o serviço externo
-    axios.get(TriggerForListUrl , { params })
+    axios.get(TriggerForListUrl, { params })
         .then(response => {
             // Se a ação for bem-sucedida, você pode enviar uma resposta 200 (OK).
             res.sendStatus(200);
@@ -262,23 +288,51 @@ app.get('/stop', (req, res) => {
 });
 
 
-// Rota para iniciar alguma ação
 app.get('/enableTriggerForEvents', (req, res) => {
-    // Define o parâmetro "type" como "start"
-    const params = { type: 'enable' };
+    // Passo 1: Ler o arquivo "events.json"
+    const eventsFilePath = path.join(__dirname, 'src', 'database', 'TriggerForEvents', 'events.json');
+    const eventsData = JSON.parse(fs.readFileSync(eventsFilePath, 'utf8'));
 
-    // Faz uma requisição GET para o serviço externo
-    axios.get(TriggerForEventsUrl , { params })
-        .then(response => {
-            // Se a ação for bem-sucedida, você pode enviar uma resposta 200 (OK).
-            res.sendStatus(200);
-        })
-        .catch(error => {
-            console.error('Erro ao fazer a requisição "start":', error);
-            // Em caso de erro, você pode enviar uma resposta de erro, como 500 (Internal Server Error).
+    // Passo 2: Extrair os valores de "text" de "events.json"
+    const textValues = eventsData.map(event => event.text);
+
+    // Passo 3: Ler o arquivo "texts.json"
+    const textsFilePath = path.join(__dirname, 'src', 'database', 'texts.json');
+    const textsData = JSON.parse(fs.readFileSync(textsFilePath, 'utf8'));
+
+    // Passo 4: Verificar se os valores existem em "texts.json"
+    const missingTextValues = textValues.filter(textValue => !textsData.find(text => text.id == textValue));
+
+    if (missingTextValues.length > 0) {
+        // Passo 5: Retornar um erro se algum valor estiver faltando
+        console.error('Configurações incorretas: os seguintes textos estão faltando em texts.json:', missingTextValues);
+        res.sendStatus(500);
+    } else {
+        // Passo 6: Ler o arquivo "status.json" para verificar o valor de "maxLines"
+        const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForEvents', 'status.json');
+        const statusData = JSON.parse(fs.readFileSync(statusFilePath, 'utf8'));
+
+        // Verificar se o valor de "maxLines" é maior que zero
+        if (statusData.length > 0 && statusData[0].maxLines > 0) {
+            // Se todas as verificações passarem, continue com a requisição para TriggerForEventsUrl.
+            const params = { type: 'enable' };
+
+            axios.get(TriggerForEventsUrl, { params })
+                .then(response => {
+                    res.sendStatus(200);
+                })
+                .catch(error => {
+                    console.error('Erro ao fazer a requisição "start":', error);
+                    res.sendStatus(500);
+                });
+        } else {
+            // Retornar um erro se o valor de "maxLines" não for maior que zero
+            console.error('Configurações incorretas: o valor de "maxLines" em status.json não é maior que zero.');
             res.sendStatus(500);
-        });
+        }
+    }
 });
+
 
 // Rota para iniciar alguma ação
 app.get('/disableTriggerForEvents', (req, res) => {
@@ -286,7 +340,7 @@ app.get('/disableTriggerForEvents', (req, res) => {
     const params = { type: 'disable' };
 
     // Faz uma requisição GET para o serviço externo
-    axios.get(TriggerForEventsUrl , { params })
+    axios.get(TriggerForEventsUrl, { params })
         .then(response => {
             // Se a ação for bem-sucedida, você pode enviar uma resposta 200 (OK).
             res.sendStatus(200);
@@ -323,23 +377,23 @@ app.post('/atualizar-Selected-Tesxts', (req, res) => {
     const { data } = req.body;
 
     if (data) {
-      const numbers = data.split(',').map(Number);
-  
-      try {
-        const jsonFile = './src/database/TriggerForList/selectedTexts.json';
-        const jsonData = numbers.map(id => ({ id })); // Crie um novo array com os novos valores
-  
-        fs.writeFileSync(jsonFile, JSON.stringify(jsonData, null, 2));
-        
-        res.json({ message: 'Seleção de mensgens atualizado com sucesso!' });
-      } catch (error) {
-        res.status(500).json({ error: 'Erro ao atualizar a seleção' });
-      }
+        const numbers = data.split(',').map(Number);
+
+        try {
+            const jsonFile = './src/database/TriggerForList/selectedTexts.json';
+            const jsonData = numbers.map(id => ({ id })); // Crie um novo array com os novos valores
+
+            fs.writeFileSync(jsonFile, JSON.stringify(jsonData, null, 2));
+
+            res.json({ message: 'Seleção de mensgens atualizado com sucesso!' });
+        } catch (error) {
+            res.status(500).json({ error: 'Erro ao atualizar a seleção' });
+        }
     } else {
-      res.status(400).json({ error: 'Dados inválidos' });
+        res.status(400).json({ error: 'Dados inválidos' });
     }
-  });
-  
+});
+
 
 app.get('/searchStatusTriggerForEvents', (req, res) => {
     const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForEvents', 'status.json');
@@ -684,7 +738,7 @@ app.post('/set-records', (req, res) => {
     existingRecords.push(newRecord);
 
     fs.writeFileSync(recordsFilePath, JSON.stringify(existingRecords, null, 2));
-    
+
     res.send('Registro adicionado com sucesso');
 });
 
@@ -719,11 +773,54 @@ app.post('/set-logs', (req, res) => {
     existingRecords.push(newRecord);
 
     fs.writeFileSync(recordsFilePath, JSON.stringify(existingRecords, null, 2));
-    
+
     res.send('Registro adicionado com sucesso');
 });
 
 
+app.get('/set-typebot', async (req, res) => {
+    try {
+      const { url, apikey, maxlines, urlbot } = req.query;
+  
+      if (!url || !apikey || !maxlines || !urlbot) {
+        return res.status(400).json({ error: 'Parâmetros ausentes ou inválidos' });
+      }
+  
+      const baseUrl = urlbot.split('/')[2]; // Extrai o domínio/subdomínio da urlbot
+      const typebotSlug = urlbot.split('/')[3]; // Extrai o slug do typebot
+      const urlEvo = url
+  
+      for (let i = 1; i <= maxlines; i++) {
+        const line = `Line${i}`;
+        const url = `${urlEvo}/typebot/set/${line}`;
+        const data = {
+          enabled: true,
+          url: `https://${baseUrl}`,
+          typebot: typebotSlug,
+          expire: 20,
+          keyword_finish: '/SAIR',
+          delay_message: 1000,
+          unknown_message: '',
+        };
+        const headers = {
+          'Content-Type': 'application/json',
+          'apikey': apikey,
+        };
+  
+        // Faz a requisição Axios para cada linha
+        await axios.post(url, data, { headers });
+  
+        console.log(`Requisição feita para ${urlEvo}`);
+
+      }
+  
+      res.status(200).json({ message: 'Requisições concluídas com sucesso' });
+    } catch (error) {
+      console.error('Erro:', error);
+      res.status(500).json({ error: 'Ocorreu um erro ao processar a solicitação' });
+    }
+  });
+  
 
 
 app.listen(port, () => {
