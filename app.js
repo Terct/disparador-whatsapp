@@ -405,6 +405,28 @@ app.get('/searchTextsTriggerForEvents', (req, res) => {
 });
 
 
+
+app.get('/searchTextsSelected', (req, res) => {
+    const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForList', 'selectedTexts.json');
+
+
+    fs.readFile(statusFilePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Erro ao ler o arquivo:', err);
+            res.status(500).json({ error: 'Erro ao buscar o arquivo' });
+        } else {
+            try {
+                const statusData = JSON.parse(data);
+                res.json(statusData);
+            } catch (error) {
+                console.error('Erro ao analisar o JSON:', error);
+                res.status(500).json({ error: 'Erro ao buscar o status' });
+            }
+        }
+    });
+});
+
+
 app.get('/set-status', (req, res) => {
     const newValue = req.query.value; // Obtém o valor do parâmetro "value" na URL.
 
@@ -665,6 +687,42 @@ app.post('/set-records', (req, res) => {
     
     res.send('Registro adicionado com sucesso');
 });
+
+
+
+// Rota para adicionar um novo registro
+app.post('/set-logs', (req, res) => {
+    const { Nome, Numero, Status, Hora, Linha, msg } = req.body;
+
+    if (!Nome || !Numero || !Status || !Hora || !Linha || !msg) {
+        return res.status(400).json({ error: 'Todos os campos (Nome, Numero, Status, Hora, Linha, msg) são obrigatórios.' });
+    }
+
+    const newRecord = {
+        Nome,
+        Numero,
+        Status,
+        Hora,
+        Linha,
+        msg
+    };
+
+    const recordsFilePath = path.join(__dirname, 'src', 'database', 'TriggerForList', 'logs.json');
+    let existingRecords;
+
+    try {
+        existingRecords = JSON.parse(fs.readFileSync(recordsFilePath));
+    } catch (error) {
+        existingRecords = [];
+    }
+
+    existingRecords.push(newRecord);
+
+    fs.writeFileSync(recordsFilePath, JSON.stringify(existingRecords, null, 2));
+    
+    res.send('Registro adicionado com sucesso');
+});
+
 
 
 
