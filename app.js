@@ -234,39 +234,110 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
 // Rota para iniciar alguma ação
 app.get('/start', (req, res) => {
-    // Define o parâmetro "type" como "start"
-    const params = { type: 'start' };
 
-    // Faz uma requisição GET para o serviço externo
-    axios.get(TriggerForListUrl, { params })
-        .then(response => {
-            // Se a ação for bem-sucedida, você pode enviar uma resposta 200 (OK).
-            res.sendStatus(200);
-        })
-        .catch(error => {
-            console.error('Erro ao fazer a requisição "start":', error);
-            // Em caso de erro, você pode enviar uma resposta de erro, como 500 (Internal Server Error).
+    // Passo 1: Ler o arquivo "events.json"
+    const eventsFilePath = path.join(__dirname, 'src', 'database', 'TriggerForList', 'selectedTexts.json');
+    const eventsData = JSON.parse(fs.readFileSync(eventsFilePath, 'utf8'));
+
+    // Passo 2: Extrair os valores de "text" de "events.json"
+    const textValues = eventsData.map(event => event.id);
+
+    // Passo 3: Ler o arquivo "texts.json"
+    const textsFilePath = path.join(__dirname, 'src', 'database', 'texts.json');
+    const textsData = JSON.parse(fs.readFileSync(textsFilePath, 'utf8'));
+
+    // Passo 4: Verificar se os valores existem em "texts.json"
+    const missingTextValues = textValues.filter(textValue => !textsData.find(text => text.id == textValue));
+
+    if (missingTextValues.length > 0) {
+        // Passo 5: Retornar um erro se algum valor estiver faltando
+        console.error('Configurações incorretas: os seguintes textos estão faltando em texts.json:', missingTextValues);
+        res.sendStatus(500);
+    } else {
+        // Passo 6: Ler o arquivo "status.json" para verificar o valor de "maxLines"
+        const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForList', 'status.json');
+        const statusData = JSON.parse(fs.readFileSync(statusFilePath, 'utf8'));
+
+        // Verificar se o valor de "maxLines" é maior que zero
+        if (statusData.length > 0 && statusData[0].maxLines > 0) {
+
+            // Define o parâmetro "type" como "start"
+            const params = { type: 'start' };
+
+            // Faz uma requisição GET para o serviço externo
+            axios.get(TriggerForListUrl, { params })
+                .then(response => {
+                    // Se a ação for bem-sucedida, você pode enviar uma resposta 200 (OK).
+                    res.sendStatus(200);
+                })
+                .catch(error => {
+                    console.error('Erro ao fazer a requisição "start":', error);
+                    // Em caso de erro, você pode enviar uma resposta de erro, como 500 (Internal Server Error).
+                    res.sendStatus(500);
+                });
+
+            console.log('teste')
+
+        } else {
+            // Retornar um erro se o valor de "maxLines" não for maior que zero
+            console.error('Configurações incorretas: o valor de "maxLines" em status.json não é maior que zero.');
             res.sendStatus(500);
-        });
+        }
+    }
 });
 
 // Rota para iniciar alguma ação
 app.get('/restart', (req, res) => {
-    // Define o parâmetro "type" como "start"
-    const params = { type: 'restart' };
 
-    // Faz uma requisição GET para o serviço externo
-    axios.get(TriggerForListUrl, { params })
-        .then(response => {
-            // Se a ação for bem-sucedida, você pode enviar uma resposta 200 (OK).
-            res.sendStatus(200);
-        })
-        .catch(error => {
-            console.error('Erro ao fazer a requisição "start":', error);
-            // Em caso de erro, você pode enviar uma resposta de erro, como 500 (Internal Server Error).
+    // Passo 1: Ler o arquivo "events.json"
+    const eventsFilePath = path.join(__dirname, 'src', 'database', 'TriggerForList', 'selectedTexts.json');
+    const eventsData = JSON.parse(fs.readFileSync(eventsFilePath, 'utf8'));
+
+    // Passo 2: Extrair os valores de "text" de "events.json"
+    const textValues = eventsData.map(event => event.id);
+
+    // Passo 3: Ler o arquivo "texts.json"
+    const textsFilePath = path.join(__dirname, 'src', 'database', 'texts.json');
+    const textsData = JSON.parse(fs.readFileSync(textsFilePath, 'utf8'));
+
+    // Passo 4: Verificar se os valores existem em "texts.json"
+    const missingTextValues = textValues.filter(textValue => !textsData.find(text => text.id == textValue));
+
+    if (missingTextValues.length > 0) {
+        // Passo 5: Retornar um erro se algum valor estiver faltando
+        console.error('Configurações incorretas: os seguintes textos estão faltando em texts.json:', missingTextValues);
+        res.sendStatus(500);
+    } else {
+        // Passo 6: Ler o arquivo "status.json" para verificar o valor de "maxLines"
+        const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForList', 'status.json');
+        const statusData = JSON.parse(fs.readFileSync(statusFilePath, 'utf8'));
+
+        // Verificar se o valor de "maxLines" é maior que zero
+        if (statusData.length > 0 && statusData[0].maxLines > 0) {
+
+            // Define o parâmetro "type" como "start"
+            const params = { type: 'restart' };
+
+            // Faz uma requisição GET para o serviço externo
+            axios.get(TriggerForListUrl, { params })
+                .then(response => {
+                    // Se a ação for bem-sucedida, você pode enviar uma resposta 200 (OK).
+                    res.sendStatus(200);
+                })
+                .catch(error => {
+                    console.error('Erro ao fazer a requisição "start":', error);
+                    // Em caso de erro, você pode enviar uma resposta de erro, como 500 (Internal Server Error).
+                    res.sendStatus(500);
+                });
+
+        } else {
+            // Retornar um erro se o valor de "maxLines" não for maior que zero
+            console.error('Configurações incorretas: o valor de "maxLines" em status.json não é maior que zero.');
             res.sendStatus(500);
-        });
+        }
+    }
 });
+
 
 
 // Rota para parar alguma ação
@@ -780,47 +851,47 @@ app.post('/set-logs', (req, res) => {
 
 app.get('/set-typebot', async (req, res) => {
     try {
-      const { url, apikey, maxlines, urlbot } = req.query;
-  
-      if (!url || !apikey || !maxlines || !urlbot) {
-        return res.status(400).json({ error: 'Parâmetros ausentes ou inválidos' });
-      }
-  
-      const baseUrl = urlbot.split('/')[2]; // Extrai o domínio/subdomínio da urlbot
-      const typebotSlug = urlbot.split('/')[3]; // Extrai o slug do typebot
-      const urlEvo = url
-  
-      for (let i = 1; i <= maxlines; i++) {
-        const line = `Line${i}`;
-        const url = `${urlEvo}/typebot/set/${line}`;
-        const data = {
-          enabled: true,
-          url: `https://${baseUrl}`,
-          typebot: typebotSlug,
-          expire: 20,
-          keyword_finish: '/SAIR',
-          delay_message: 1000,
-          unknown_message: '',
-        };
-        const headers = {
-          'Content-Type': 'application/json',
-          'apikey': apikey,
-        };
-  
-        // Faz a requisição Axios para cada linha
-        await axios.post(url, data, { headers });
-  
-        console.log(`Requisição feita para ${urlEvo}`);
+        const { url, apikey, maxlines, urlbot } = req.query;
 
-      }
-  
-      res.status(200).json({ message: 'Requisições concluídas com sucesso' });
+        if (!url || !apikey || !maxlines || !urlbot) {
+            return res.status(400).json({ error: 'Parâmetros ausentes ou inválidos' });
+        }
+
+        const baseUrl = urlbot.split('/')[2]; // Extrai o domínio/subdomínio da urlbot
+        const typebotSlug = urlbot.split('/')[3]; // Extrai o slug do typebot
+        const urlEvo = url
+
+        for (let i = 1; i <= maxlines; i++) {
+            const line = `Line${i}`;
+            const url = `${urlEvo}/typebot/set/${line}`;
+            const data = {
+                enabled: true,
+                url: `https://${baseUrl}`,
+                typebot: typebotSlug,
+                expire: 20,
+                keyword_finish: '/SAIR',
+                delay_message: 1000,
+                unknown_message: '',
+            };
+            const headers = {
+                'Content-Type': 'application/json',
+                'apikey': apikey,
+            };
+
+            // Faz a requisição Axios para cada linha
+            await axios.post(url, data, { headers });
+
+            console.log(`Requisição feita para ${urlEvo}`);
+
+        }
+
+        res.status(200).json({ message: 'Requisições concluídas com sucesso' });
     } catch (error) {
-      console.error('Erro:', error);
-      res.status(500).json({ error: 'Ocorreu um erro ao processar a solicitação' });
+        console.error('Erro:', error);
+        res.status(500).json({ error: 'Ocorreu um erro ao processar a solicitação' });
     }
-  });
-  
+});
+
 
 
 app.listen(port, () => {
