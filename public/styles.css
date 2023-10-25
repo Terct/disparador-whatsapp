@@ -312,3 +312,26 @@ nav ul li a:hover {
     width: 50%;
     
 }
+
+#Conteiner-Logs-principal{
+
+}
+
+#Conteiner-Logs {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    display: none;
+}
+
+#titulo{
+    padding-bottom: 30px;
+}
+
+#logs{
+
+    background-color: #4d897f69;
+    
+}

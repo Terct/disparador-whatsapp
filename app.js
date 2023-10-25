@@ -444,6 +444,27 @@ app.get('/search-status', (req, res) => {
     });
 });
 
+
+app.get('/search-log', (req, res) => {
+    const statusFilePath = path.join(__dirname, 'src', 'database', 'TriggerForList', 'logs.json');
+
+    fs.readFile(statusFilePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Erro ao ler o arquivo status.json:', err);
+            res.status(500).json({ error: 'Erro ao buscar o status' });
+        } else {
+            try {
+                const statusData = JSON.parse(data);
+                res.json(statusData);
+            } catch (error) {
+                console.error('Erro ao analisar o JSON do arquivo status.json:', error);
+                res.status(500).json({ error: 'Erro ao buscar o status' });
+            }
+        }
+    });
+});
+
+
 app.post('/atualizar-Selected-Tesxts', (req, res) => {
     const { data } = req.body;
 

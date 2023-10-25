@@ -27,6 +27,14 @@
 
     </div>
 
+
+    <div id="Conteiner-Logs-principal"></div>
+    <div id="Conteiner-Logs">
+        <h1>Logs</h1>
+        <textarea disabled name="logs" id="logs" cols="70" rows="15"></textarea>
+    </div>
+    </div>
+
     <div id="Conteiner-Control">
         <h1 id="status"></h1>
         <button id="restart-button">Iniciar</button>
@@ -247,7 +255,7 @@
                     }
                 })
                 .catch(error => console.error('Erro ao realizar ação de Iniciar:', error));
-             
+
         });
 
         document.getElementById('stop-button').addEventListener('click', () => {
@@ -275,7 +283,7 @@
                     }
                 })
                 .catch(error => console.error('Erro ao realizar ação de Parar:', error));
-                
+
         });
 
 

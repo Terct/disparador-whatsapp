@@ -184,48 +184,49 @@
         let itemCount = 0;
 
         function SearchRecords() {
+    const contactList = document.getElementById('contact-list');
+    fetch('/search-records')
+        .then(response => response.json())
+        .then(data => {
+            // Inverta a ordem dos dados
+            data = data.reverse();
 
-            const contactList = document.getElementById('contact-list');
-            fetch('/search-records')
-                .then(response => response.json())
-                .then(data => {
-                    // Verifique se a resposta tem mais itens do que os itens rastreados globalmente
-                    if (data.length > itemCount) {
-                        // Atualize a variável global
-                        itemCount = data.length;
+            // Verifique se a resposta tem mais itens do que os itens rastreados globalmente
+            if (data.length > itemCount) {
+                // Atualize a variável global
+                itemCount = data.length;
 
-                        // Limpa a tabela
-                        contactList.innerHTML = '';
+                // Limpa a tabela
+                contactList.innerHTML = '';
 
-                        data.forEach(contact => {
-                            const row = document.createElement('tr');
-                            const nameCell = document.createElement('td');
-                            const numberCell = document.createElement('td');
-                            const statusCell = document.createElement('td');
-                            const hourCell = document.createElement('td');
-                            const lineCell = document.createElement('td');
-                            const msgCell = document.createElement('td');
+                data.forEach(contact => {
+                    const row = document.createElement('tr');
+                    const nameCell = document.createElement('td');
+                    const numberCell = document.createElement('td');
+                    const statusCell = document.createElement('td');
+                    const hourCell = document.createElement('td');
+                    const lineCell = document.createElement('td');
+                    const msgCell = document.createElement('td');
 
-                            nameCell.textContent = contact.Nome;
-                            numberCell.textContent = contact.Numero;
-                            statusCell.textContent = contact.Status;
-                            hourCell.textContent = contact.Hora;
-                            lineCell.textContent = contact.Linha;
-                            msgCell.textContent = contact.msg;
+                    nameCell.textContent = contact.Nome;
+                    numberCell.textContent = contact.Numero;
+                    statusCell.textContent = contact.Status;
+                    hourCell.textContent = contact.Hora;
+                    lineCell.textContent = contact.Linha;
+                    msgCell.textContent = contact.msg;
 
-                            row.appendChild(nameCell);
-                            row.appendChild(numberCell);
-                            row.appendChild(statusCell);
-                            row.appendChild(hourCell);
-                            row.appendChild(lineCell);
-                            row.appendChild(msgCell);
-                            contactList.appendChild(row);
-                        });
-                    }
-                })
-                .catch(error => console.error('Erro ao buscar a lista de contatos:', error));
-        }
-
+                    row.appendChild(nameCell);
+                    row.appendChild(numberCell);
+                    row.appendChild(statusCell);
+                    row.appendChild(hourCell);
+                    row.appendChild(lineCell);
+                    row.appendChild(msgCell);
+                    contactList.appendChild(row);
+                });
+            }
+        })
+        .catch(error => console.error('Erro ao buscar a lista de contatos:', error));
+}
 
 
         document.getElementById('enable-button').addEventListener('click', () => {
