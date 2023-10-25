@@ -36,8 +36,8 @@ app.get('/configEvents', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'configEvents.html'));
 });
 
-const TriggerForListUrl = "https://n8n.dagestao.com/webhook/startorstop"
-const TriggerForEventsUrl = "https://n8n.dagestao.com/webhook/controllertriggerevents"
+const TriggerForListUrl = "https://n8n.meupack.online/webhook/startorstop"
+const TriggerForEventsUrl = "https://n8n.meupack.online/webhook/controllertriggerevents"
 
 
 app.get('/search-list', (req, res) => {
@@ -893,16 +893,25 @@ app.get('/set-typebot', async (req, res) => {
                 keyword_finish: '/SAIR',
                 delay_message: 1000,
                 unknown_message: '',
+                listening_from_me: false,
             };
             const headers = {
                 'Content-Type': 'application/json',
                 'apikey': apikey,
             };
 
+            
+           
+
             // Faz a requisição Axios para cada linha
             await axios.post(url, data, { headers });
 
             console.log(`Requisição feita para ${urlEvo}`);
+
+            console.log(url)
+            console.log(data)
+            console.log(headers)
+
 
         }
 
